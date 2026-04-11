@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* SmartDash FV: Azul Marino y Naranja */
+    --background: 210 40% 98%;
+    /* Fondo Gris Aire (Light Mode) */
+    --foreground: 0 0% 20%;
+    /* Texto gris oscuro (#333333) */
+
+    --primary: 216 95% 59%;
+    /* Azul de Acción (#3483FA) */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 54 85% 65%;
+    /* Amarillo Vibrante (#FFF159) suavizado */
+    --accent-foreground: 210 40% 98%;
+
+    --card: 0 0% 100%;
+    /* Fondo de tarjetas: Blanco puro */
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 215 20.2% 65.1%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --radius: 0.75rem;
+  }
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: 'Inter', sans-serif;
+}

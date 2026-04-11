@@ -1,0 +1,5 @@
+[33mbac2b15[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix(meli): persist seller nickname as store display_name in oauth flow
+[33m382fa0b[m auth(meli): align start client_id priority with exchange
+[33m4154b3f[m test(ci): skip v2 webhook worker spec when supabase env vars missing in CI
+[33m9c86478[m fix(ci+docs): skip oauth-start in CI; elevate V3 in root README
+[33m13dad03[m docs(v3): elevate V3 as active source of truth in main docs

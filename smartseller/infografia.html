@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSeller Clinical Dashboard - Triage de Supervivencia</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+:root {
+    --bg-deep: #0B132B;
+    --bg-surface: #1C2541;
+    --primary: #00E5FF;
+    --critical: #FF3366;
+    --success: #00FF87;
+    --warning: #FFB703;
+}
+
+body {
+    background-color: var(--bg-deep);
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+
+.glass-card {
+    background: var(--bg-surface);
+    border: 1px solid rgba(0, 229, 255, 0.1);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 229, 255, 0.3);
+}
+
+.clinical-badge {
+    background: rgba(0, 229, 255, 0.1);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.whatsapp-bubble {
+    background: #25D366;
+    color: white;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.guided-mode-active {
+    outline: 2px solid var(--primary);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+}
+
+/* Custom animations for the "Pulse" simulation */
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 51, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); }
+}
+.alert-pulse { animation: pulse-red 2s infinite; }
+
+</style>
+</head>
+<body class="antialiased">
+
+<!-- 
+NARRATIVE PLAN:
+1. Entry: Guided Mode toggle to explain the "Clinical Semantics".
+2. The Tomography: Health Score with trend + Human-readable Remaining Time.
+3. System Pressure: Plotly visualization showing "Backlog Oculto" vs Capacity.
+4. Action Center: Prioritized clinical actions (Triage).
+5. The Triad Simulation: Floating WhatsApp alert and "Generate PDF" interaction.
+6. Trust: Detailed security disclaimer as a sales tool.
+-->
+
+<nav class="fixed top-0 w-full z-50 bg-[#0B132B]/80 backdrop-blur-xl border-b border-white/5 px-6 py-3 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+        <span class="text-2xl">⚕️</span>
+        <div class="text-xl font-black tracking-tighter italic">SMART<span class="text-[#00E5FF]">SELLER</span></div>
+    </div>
+    
+    <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Modo Guiado</span>
+            <button id="guidedToggle" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors duration-300">
+                <div id="toggleDot" class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-300"></div>
+            </button>
+        </div>
+        <button class="bg-[#00E5FF] text-[#0B132B] px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-cyan-500/20">
+            Generar Auditoría
+        </button>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 pt-24 pb-32">
+    
+    <!-- Hero Header -->
+    <header class="mb-12 text-center md:text-left">
+        <div class="clinical-badge mb-4 inline-block">Protocolo de Diagnóstico Operativo</div>
+        <h1 class="text-4xl md:text-5xl font-black mb-3">Tomografía Operativa <span class="text-gray-500 italic">Simulada</span></h1>
+        <p class="text-gray-400 max-w-2xl text-sm leading-relaxed">
+            Esta es una simulación de alta fidelidad. Analiza cómo SmartSeller identifica patologías logísticas y financieras antes de que impacten en tu reputación.
+        </p>
+    </header>
+
+    <!-- Top Grid: Score & Time & Failures -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+        
+        <!-- Estado Operativo -->
+        <div id="step-1" class="md:col-span-3 glass-card p-6 flex flex-col justify-between">
+            <div>
+                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Estado Operativo</p>
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-6xl font-black text-coral leading-none">72</span>
+                    <span class="text-xl text-gray-500">/100</span>
+                </div>
+                <div class="mt-3 flex items-center text-coral text-xs font-bold uppercase italic tracking-tighter">
+                    <span class="mr-1">↘</span> Tendencia: En Deterioro
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-4 italic">"Mide qué tan cerca está la operación de tener un problema clínico."</p>
+        </div>
+
+        <!-- Tiempo Restante -->
+        <div id="step-2" class="md:col-span-5 glass-card p-6 border-l-4 border-l-critical alert-pulse">
+            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Tiempo Restante</p>
+            <div class="flex items-start space-x-4">
+                <div class="text-4xl">🚨</div>
+                <div>
+                    <h3 class="text-white font-bold text-lg leading-snug">Si no actuás ahora: esta orden entra en incumplimiento en <span class="text-critical underline">3h 20m</span></h3>
+                    <div class="bg-black/20 p-3 rounded-lg mt-3 border border-white/5">
+                        <p class="text-xs font-mono text-gray-300 uppercase tracking-tighter">Orden #45878 en Riesgo</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-white/5 grid grid-cols-3 gap-2 text-center">
+                <div><p class="text-[8px] uppercase text-gray-500 font-bold mb-1">Reputación</p><p class="text-[10px] text-critical font-black tracking-widest italic">↓↓ CRÍTICO</p></div>
+                <div><p class="text-[8px] uppercase text-gray-500 font-bold mb-1">Visibilidad</p><p class="text-[10px] text-coral font-black tracking-widest italic">↓ ALERTA</p></div>
+                <div><p class="text-[8px] uppercase text-gray-500 font-bold mb-1">Ventas</p><p class="text-[10px] text-coral font-black tracking-widest italic">↓ ALERTA</p></div>
+            </div>
+        </div>
+
+        <!-- Puntos de Fallo -->
+        <div id="step-3" class="md:col-span-4 glass-card p-6">
+            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Puntos de Fallo</p>
+            <ul class="space-y-4">
+                <li class="flex items-start space-x-3">
+                    <span class="text-coral mt-1">•</span>
+                    <p class="text-xs text-gray-300">Acumulación crítica de pedidos (Saturación de mediodía).</p>
+                </li>
+                <li class="flex items-start space-x-3">
+                    <span class="text-coral mt-1">•</span>
+                    <p class="text-xs text-gray-300">Margen negativo detectado en <span class="text-white font-bold">B01-AUR-PRO</span>.</p>
+                </li>
+                <li class="flex items-start space-x-3">
+                    <span class="text-warning mt-1">•</span>
+                    <p class="text-xs text-gray-300">4 preguntas críticas superan las 2 horas de espera.</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Middle Grid: Pressure & Action -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-16">
+        
+        <!-- Presión del Sistema -->
+        <div id="step-4" class="md:col-span-8 glass-card p-8">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Presión del Sistema</p>
+                    <p class="text-xs text-coral font-bold italic mt-1 uppercase">Saturación Detectada // Backlog Oculto</p>
+                </div>
+                <div class="flex space-x-6 text-right">
+                    <div><p class="text-[8px] uppercase text-gray-500">Volumen</p><p class="text-xl font-black">128</p></div>
+                    <div><p class="text-[8px] uppercase text-gray-500">Capacidad</p><p class="text-xl font-black text-gray-500">84</p></div>
+                </div>
+            </div>
+            <div id="pressurePlot" class="w-full h-64"></div>
+            <p class="text-center text-[10px] text-gray-500 italic mt-4">"Lo que no se ve hasta que explota: la brecha entre demanda y capacidad real."</p>
+        </div>
+
+        <!-- Acción Prioritaria -->
+        <div id="step-5" class="md:col-span-4 glass-card bg-gradient-to-br from-[#1C2541] to-[#0B132B] p-8 flex flex-col justify-between border-2 border-cyan/20">
+            <div class="text-center">
+                <p class="text-[10px] font-black text-cyan uppercase tracking-widest mb-6 border border-cyan/30 py-1 inline-block px-4 rounded-full">Acción Prioritaria</p>
+                <h3 class="text-3xl font-black text-white leading-tight mb-4">Despachar 8 pedidos críticos en los próximos 90 minutos.</h3>
+                <p class="text-gray-400 text-sm italic">"Si no se resuelve esto primero, el resto de la operación no importa."</p>
+            </div>
+            <button class="w-full bg-cyan text-[#0B132B] font-black py-4 rounded-xl text-xs uppercase tracking-widest hover:bg-white transition-all transform active:scale-95 shadow-xl shadow-cyan-500/20">
+                Ver Cómo Resolver Esto
+            </button>
+        </div>
+    </div>
+
+    <!-- The Triad Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        <div class="glass-card p-8 text-center hover:border-cyan/40 transition-all cursor-pointer">
+            <div class="text-4xl mb-4">🔬</div>
+            <h4 class="font-bold mb-2">VER: Dashboard</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">Claridad operativa inmediata mediante la Tomografía del negocio.</p>
+        </div>
+        <div id="pdfAction" class="glass-card p-8 text-center hover:border-cyan/40 transition-all cursor-pointer group">
+            <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📄</div>
+            <h4 class="font-bold mb-2">ENTENDER: Reporte Clínico</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">Narrativa estructurada que ordena el riesgo y propone acción forense.</p>
+            <span class="text-[10px] text-cyan font-bold uppercase mt-4 block">Descargar PDF Demo</span>
+        </div>
+        <div class="glass-card p-8 text-center hover:border-cyan/40 transition-all cursor-pointer group relative overflow-hidden">
+            <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📲</div>
+            <h4 class="font-bold mb-2">EXPERIMENTAR: WhatsApp</h4>
+            <p class="text-xs text-gray-400 leading-relaxed">El pulso en tiempo real. Recibí alertas justo antes de que el daño ocurra.</p>
+            <!-- Simulated Notification -->
+            <div class="absolute -right-2 -bottom-2 rotate-12 opacity-10 group-hover:opacity-100 transition-opacity">
+                <div class="whatsapp-bubble p-3 rounded-lg text-[10px] text-left">
+                    <strong>SmartSeller:</strong> ⚠ 3 órdenes en riesgo...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security & FAQ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div class="glass-card p-10 border-l-4 border-l-cyan">
+            <h2 class="text-2xl font-black mb-6 flex items-center">
+                <span class="mr-4">🛡️</span> Protocolo de Seguridad
+            </h2>
+            <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                SmartSeller es una plataforma de **inteligencia de lectura**. No tiene permisos de escritura ni capacidad para alterar tus procesos operativos. Tu sistema está blindado.
+            </p>
+            <ul class="space-y-3 text-xs text-gray-400">
+                <li class="flex items-center space-x-3"><span class="text-cyan">✔</span> <span>Acceso oficial vía OAuth de Mercado Libre.</span></li>
+                <li class="flex items-center space-x-3"><span class="text-cyan">✔</span> <span>Permisos limitados exclusivamente a consulta de eventos.</span></li>
+                <li class="flex items-center space-x-3"><span class="text-cyan">✔</span> <span>Revocable en cualquier momento desde tu panel de ML.</span></li>
+            </ul>
+        </div>
+        
+        <div class="space-y-4">
+            <details class="glass-card p-5 group cursor-pointer">
+                <summary class="text-sm font-bold flex justify-between items-center uppercase tracking-tighter">
+                    "No quiero dar acceso a mis datos"
+                    <span class="text-cyan transition-transform group-open:rotate-180">↓</span>
+                </summary>
+                <p class="text-xs text-gray-400 mt-4 leading-relaxed">Solo leemos información pública de tu plataforma mediante API estandarizada. Sin claves de administrador y bajo tu control total.</p>
+            </details>
+            <details class="glass-card p-5 group cursor-pointer">
+                <summary class="text-sm font-bold flex justify-between items-center uppercase tracking-tighter">
+                    "Ya miro métricas en mi panel actual"
+                    <span class="text-cyan transition-transform group-open:rotate-180">↓</span>
+                </summary>
+                <p class="text-xs text-gray-400 mt-4 leading-relaxed">Las métricas tradicionales te muestran lo que ya pasó. SmartSeller te muestra lo que **está por pasar**, dándote margen de reacción.</p>
+            </details>
+        </div>
+    </div>
+
+</main>
+
+<footer class="bg-black/20 border-t border-white/5 py-12 px-6 text-center">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-xl font-black italic opacity-50 uppercase tracking-tighter">SmartSeller <span class="text-xs font-light">Clinical Intelligence Hub</span></div>
+        <div class="flex space-x-8 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+            <a href="#" class="hover:text-cyan transition-colors">Privacidad</a>
+            <a href="#" class="hover:text-cyan transition-colors">Protocolos</a>
+            <a href="#" class="hover:text-cyan transition-colors">Soporte Técnico</a>
+        </div>
+    </div>
+</footer>
+
+<!-- Simulated WhatsApp Notification Toast -->
+<div id="waToast" class="fixed bottom-6 right-6 whatsapp-bubble px-5 py-4 rounded-2xl max-w-xs transform translate-y-32 transition-transform duration-500 z-[100] cursor-pointer">
+    <div class="flex items-center space-x-3 mb-1">
+        <span class="text-lg">💬</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest opacity-80">SmartSeller Pulse</span>
+    </div>
+    <p class="text-xs leading-snug"><strong>⚠️ Alerta Crítica:</strong> Tenés 8 pedidos en riesgo en las próximas 3 horas. Esto ya está afectando tu reputación. Priorizá despacho inmediato.</p>
+</div>
+
+<script>
+    // --- Guided Mode Logic ---
+    const guidedToggle = document.getElementById('guidedToggle');
+    const toggleDot = document.getElementById('toggleDot');
+    let guidedMode = false;
+
+    const steps = [
+        { id: 'step-1', text: 'ESTADO OPERATIVO: No es un número suelto. Es Health Score + Dirección de tendencia determinística.' },
+        { id: 'step-2', text: 'TIEMPO RESTANTE: Urgencia humanizada. No usamos timestamps, usamos tiempo de acción.' },
+        { id: 'step-3', text: 'PUNTOS DE FALLO: Diagnóstico estructural limitado a 3-5 elementos estrictamente accionables.' },
+        { id: 'step-4', text: 'PRESIÓN DEL SISTEMA: La tensión real de tu operación. Identifica el colapso antes de que ocurra.' },
+        { id: 'step-5', text: 'ACCIÓN PRIORITARIA: El Triage. Le decimos a tu equipo exactamente qué hacer ahora mismo.' }
+    ];
+
+    guidedToggle.addEventListener('click', () => {
+        guidedMode = !guidedMode;
+        toggleDot.style.transform = guidedMode ? 'translateX(1.25rem)' : 'translateX(0)';
+        guidedToggle.style.backgroundColor = guidedMode ? 'var(--primary)' : '#374151';
+        
+        steps.forEach(step => {
+            const el = document.getElementById(step.id);
+            if (guidedMode) {
+                el.classList.add('guided-mode-active');
+                // Create or show tooltip
+                let tooltip = el.querySelector('.clinical-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'clinical-tooltip absolute -top-12 left-0 right-0 bg-cyan text-[#0B132B] text-[10px] font-bold p-2 rounded shadow-xl z-20 text-center uppercase tracking-tighter';
+                    tooltip.innerText = step.text;
+                    el.style.position = 'relative';
+                    el.appendChild(tooltip);
+                }
+            } else {
+                el.classList.remove('guided-mode-active');
+                const tooltip = el.querySelector('.clinical-tooltip');
+                if (tooltip) tooltip.remove();
+            }
+        });
+    });
+
+    // --- WhatsApp Toast Simulation ---
+    setTimeout(() => {
+        document.getElementById('waToast').style.transform = 'translateY(0)';
+    }, 4000);
+
+    document.getElementById('waToast').addEventListener('click', () => {
+        document.getElementById('waToast').style.transform = 'translateY(150%)';
+    });
+
+    // --- Plotly Pressure Visualization (Surgical Look) ---
+    const initPlot = () => {
+        const xData = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
+        const capacity = Array(xData.length).fill(84);
+        const volume = [10, 15, 25, 45, 70, 95, 128, 110, 90, 75, 50, 30, 15];
+        
+        const traceVolume = {
+            x: xData, y: volume,
+            mode: 'lines',
+            name: 'Carga de Eventos',
+            line: { shape: 'spline', color: '#00E5FF', width: 4 },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(0, 229, 255, 0.05)',
+            type: 'scattergl'
+        };
+
+        const traceCapacity = {
+            x: xData, y: capacity,
+            mode: 'lines',
+            name: 'Capacidad Nominal',
+            line: { dash: 'dashdot', color: 'rgba(255, 255, 255, 0.2)', width: 2 },
+            type: 'scattergl'
+        };
+
+        const layout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            showlegend: false,
+            margin: { l: 30, r: 10, t: 10, b: 30 },
+            xaxis: {
+                showgrid: false,
+                zeroline: false,
+                tickfont: { color: '#4b5563', size: 9 },
+                tickvals: [0, 6, 12, 18, 24],
+                ticktext: ['00:00', '06:00', '12:00', '18:00', '24:00']
+            },
+            yaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(255,255,255,0.05)',
+                zeroline: false,
+                tickfont: { color: '#4b5563', size: 9 }
+            },
+            annotations: [
+                {
+                    x: 12, y: 128,
+                    text: 'BACKLOG OCULTO (COLAPSO)',
+                    font: { color: '#FF3366', size: 9, weight: 'bold' },
+                    showarrow: true,
+                    arrowhead: 2,
+                    arrowcolor: '#FF3366',
+                    ax: 0, ay: -40
+                }
+            ]
+        };
+
+        Plotly.newPlot('pressurePlot', [traceVolume, traceCapacity], layout, {responsive: true, displayModeBar: false});
+    };
+
+    window.onload = initPlot;
+
+    // --- PDF Simulation Click ---
+    document.getElementById('pdfAction').addEventListener('click', () => {
+        const btn = document.querySelector('#pdfAction span');
+        btn.innerText = "Generando Reporte Forense...";
+        setTimeout(() => {
+            btn.innerText = "Reporte Listo (Simulación)";
+            btn.classList.replace('text-cyan', 'text-neon');
+        }, 1500);
+    });
+</script>
+</body>
+</html>
