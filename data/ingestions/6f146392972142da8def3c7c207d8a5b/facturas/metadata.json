@@ -1,0 +1,13 @@
+{
+  "ingestion_id": "6f146392972142da8def3c7c207d8a5b",
+  "timestamp": "2026-04-11T21:22:47.088148Z",
+  "row_count": 0,
+  "columns_detected": [
+    "n° pedido",
+    "importe $"
+  ],
+  "mapping": {},
+  "quality_score": 0.0,
+  "risk_score": 0.0,
+  "priority": "HIGH"
+}

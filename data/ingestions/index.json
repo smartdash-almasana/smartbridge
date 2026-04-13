@@ -1,0 +1,823 @@
+[
+  {
+    "ingestion_id": "02734461b0c04867a512af50ffd63013",
+    "timestamp": "2026-04-13T14:22:56.616541Z",
+    "total_signals": 2,
+    "document_type": "upload",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "3693198d7f194a36b13f8851778c81bf",
+    "timestamp": "2026-04-13T14:14:56.877205Z",
+    "total_signals": 0,
+    "document_type": "upload",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "d64d3a7981fe4e86b4c562708fe9cd19",
+    "timestamp": "2026-04-13T14:14:33.317784Z",
+    "total_signals": 2,
+    "document_type": "upload",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "cb0d178d43c24ce580d226b60c1e9beb",
+    "timestamp": "2026-04-12T22:38:51.831193Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "a4cd2340ad804648bec98c9f172dd90e",
+    "timestamp": "2026-04-12T22:38:51.643987Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "9d852f55bc29469395cc3a4aab82bd45",
+    "timestamp": "2026-04-12T22:38:51.528157Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "30681cea567a49bdb9946b383614405d",
+    "timestamp": "2026-04-12T22:38:51.341427Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "2ebd165bb5bd49c1b1d5278d427c5340",
+    "timestamp": "2026-04-12T20:57:06.181944Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "02b4744fbb9940728b706371d3964cac",
+    "timestamp": "2026-04-12T20:57:06.034005Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "347763ff67e846b4807ad8663e4014a6",
+    "timestamp": "2026-04-12T20:57:05.925237Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "f6197b4039d64114979e6950802396e8",
+    "timestamp": "2026-04-12T20:57:05.797516Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "b27a823567f04a0eac77f43394dd9850",
+    "timestamp": "2026-04-12T00:59:53.994447Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "80fd2261f6224f33be5c90888941c1f1",
+    "timestamp": "2026-04-12T00:59:53.555662Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "1b31b3f4c4c540e2bf955bf089da6b61",
+    "timestamp": "2026-04-12T00:59:53.295711Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "8131ca98ec614a7b8122b68525ea3911",
+    "timestamp": "2026-04-12T00:59:53.129601Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "7cd9a2b52d154ff5a49b4fe0d8665c34",
+    "timestamp": "2026-04-12T00:59:10.834770Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 5,
+    "document_type": "facturas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "eefcd57c17b042a3b1f7f5aa01e93927",
+    "timestamp": "2026-04-12T00:58:59.667242Z",
+    "total_signals": 0,
+    "ventas_count": 8,
+    "facturas_count": 8,
+    "document_type": "ventas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "888f9f8b21664f648e72b2569d91c034",
+    "timestamp": "2026-04-12T00:58:43.766448Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 8,
+    "document_type": "facturas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "87edc76ee3354b3184d81a402a0e1ebb",
+    "timestamp": "2026-04-12T00:58:25.876901Z",
+    "total_signals": 0,
+    "ventas_count": 8,
+    "facturas_count": 8,
+    "document_type": "ventas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "63bf3f8bba6645ad957a7def69cb0b79",
+    "timestamp": "2026-04-12T00:58:08.213218Z",
+    "total_signals": 0,
+    "ventas_count": 3,
+    "facturas_count": 3,
+    "document_type": "ventas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "14e4da3625014f3cba355613b9718ced",
+    "timestamp": "2026-04-12T00:57:52.272931Z",
+    "total_signals": 0,
+    "ventas_count": 3,
+    "facturas_count": 3,
+    "document_type": "ventas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "8f5e8f02a9bb4ae28137c3f21c72eea7",
+    "timestamp": "2026-04-12T00:52:49.723067Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 3,
+    "document_type": "ventas",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "5a31e24129b44dce8eb8676fb08c45f9",
+    "timestamp": "2026-04-11T23:58:31.358305Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "92abde25f91c479ebb386c01883c0083",
+    "timestamp": "2026-04-11T23:58:31.193891Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "cda220938d654547929038a64028a2c2",
+    "timestamp": "2026-04-11T23:58:31.091426Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "315c43ea2b594020b8cd8b16ad94cc03",
+    "timestamp": "2026-04-11T23:58:31.001446Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "19fc6b511faa4fb9ba18350c0b67f45b",
+    "timestamp": "2026-04-11T23:57:54.319614Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "ec26b92711b94637bdbf9386fbfc876e",
+    "timestamp": "2026-04-11T23:57:08.573590Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "dbdce4b4701342c4af5c0821ee77da2b",
+    "timestamp": "2026-04-11T23:57:08.146578Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "7a83e7c17f334857a4eb9961b018b93e",
+    "timestamp": "2026-04-11T23:57:06.616353Z",
+    "total_signals": 1,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "340c1ae28a414c26bdac3ef285235bbc",
+    "timestamp": "2026-04-11T23:57:06.287351Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "6b2ad46b4d6f4c89961e49c2f862b56d",
+    "timestamp": "2026-04-11T23:57:06.121603Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "9a3e02053663412589dbde9f2f3292f5",
+    "timestamp": "2026-04-11T23:56:10.833257Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "8f474d588a2f43dcb169b73161578419",
+    "timestamp": "2026-04-11T23:56:10.666791Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "49ce67e92c8a400e820815d02e492e4b",
+    "timestamp": "2026-04-11T23:56:10.556785Z",
+    "total_signals": 1,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "910ecf0ab0c7484c8f1a9867c0eac6c5",
+    "timestamp": "2026-04-11T23:56:09.830716Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "6b12c7f787074726871a4cee6c833393",
+    "timestamp": "2026-04-11T23:56:09.747798Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "d5871d02fb204a018cf34fd20b517cb1",
+    "timestamp": "2026-04-11T23:55:07.081011Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "fa6fd482e1c545089b302182335eeb17",
+    "timestamp": "2026-04-11T23:55:06.978061Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "7b168e33c86640abb58197960dd0c9a8",
+    "timestamp": "2026-04-11T23:55:06.905299Z",
+    "total_signals": 1,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "8f27050955f34c21b97632bc6d4c75cd",
+    "timestamp": "2026-04-11T23:55:05.048589Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "71d3da43d18e43039e048b361e286c0a",
+    "timestamp": "2026-04-11T23:55:04.414450Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "7ab6e685d5554de19337ec39ffc96d73",
+    "timestamp": "2026-04-11T23:51:49.925339Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "7f72a7c15daf44e6accb52c813b6a3ed",
+    "timestamp": "2026-04-11T23:51:49.817714Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "6c71c469877445ec84eef693b61076b2",
+    "timestamp": "2026-04-11T23:51:49.731854Z",
+    "total_signals": 1,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "2890a81ff557438bbd0d0349ee5dd377",
+    "timestamp": "2026-04-11T23:51:48.993857Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "0e13a468008f4ca386cd76193e45e216",
+    "timestamp": "2026-04-11T23:51:48.914807Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 0.5
+  },
+  {
+    "ingestion_id": "b1ccb5c89a3240a9a32d605fd0c8da0c",
+    "timestamp": "2026-04-11T23:51:10.367244Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "29d15e0a643f4219a9f7e2d0fdb1cf17",
+    "timestamp": "2026-04-11T23:51:10.269219Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "2b36dfce36b5435184d7483b4fb90fad",
+    "timestamp": "2026-04-11T23:51:10.180759Z",
+    "total_signals": 1,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "16fa09c16c6f4573884b3daad68e6c13",
+    "timestamp": "2026-04-11T23:51:09.538879Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "8468b194703c434695b11e0baaa4a753",
+    "timestamp": "2026-04-11T23:51:09.456846Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "c10c43f0e5b04b66bc13fe4d139a9d75",
+    "timestamp": "2026-04-11T23:50:34.730875Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "d01e1c8408b8477993c3b3796d51cfeb",
+    "timestamp": "2026-04-11T23:50:34.635606Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "92387f78926f4b94ac36cfadca105740",
+    "timestamp": "2026-04-11T23:50:34.555756Z",
+    "total_signals": 1,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "b6b933539b0e4d5e8536e4e85880ee4b",
+    "timestamp": "2026-04-11T23:50:33.900518Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "0421a22f1e1e48e2822398e46c1e98db",
+    "timestamp": "2026-04-11T23:50:33.832697Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "12aadc3a302c4b09ab6cc6b7ddfd6e39",
+    "timestamp": "2026-04-11T23:21:24.487696Z",
+    "total_signals": 3,
+    "ventas_count": 3,
+    "facturas_count": 0,
+    "document_type": "ventas",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "5b27354292c1444293cccbd76c3c0c25",
+    "timestamp": "2026-04-11T23:04:08.525627Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "845e76ba11d94df5a7deec539d33cc95",
+    "timestamp": "2026-04-11T23:04:08.282887Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "23eb98d3471643da9df8a8ae5095a73a",
+    "timestamp": "2026-04-11T23:04:08.146222Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "25e596301b9f4563971329a0649d92d8",
+    "timestamp": "2026-04-11T23:04:08.019268Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "6d73e4330ce34b69b5a5eb271c941046",
+    "timestamp": "2026-04-11T21:59:44.130639Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "bb01ee687178452785f78ee830a8f0f1",
+    "timestamp": "2026-04-11T21:59:43.668517Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "7c2a9790e22a45cd86743798c89036e1",
+    "timestamp": "2026-04-11T21:59:43.330665Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "bab0a9449e464703a13d8cdf34c98618",
+    "timestamp": "2026-04-11T21:59:43.174146Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "d48a6aea753e4ab7adc902f284c12392",
+    "timestamp": "2026-04-11T21:54:55.863500Z",
+    "total_signals": 3,
+    "ventas_count": 3,
+    "facturas_count": 0,
+    "document_type": "ventas",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "5fc95e7a4b5e4590af11d55b54453ce2",
+    "timestamp": "2026-04-11T21:54:28.314465Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 0,
+    "document_type": "facturas",
+    "priority": "HIGH",
+    "quality_score": 0.0
+  },
+  {
+    "ingestion_id": "6d12ab6141cc4c55a59e972daa2f18ae",
+    "timestamp": "2026-04-11T21:22:03.500211Z",
+    "total_signals": 0,
+    "ventas_count": 0,
+    "facturas_count": 0,
+    "document_type": "facturas",
+    "priority": "HIGH",
+    "quality_score": 0.0
+  },
+  {
+    "ingestion_id": "9e65c49ba75d4f4c8e1344c946343810",
+    "timestamp": "2026-04-11T20:53:45.938019Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "7ce8566f8f6147dda387f0e1f327a4a6",
+    "timestamp": "2026-04-11T20:53:45.634984Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "21f53635a3f54a7eb1bb6f686ae75091",
+    "timestamp": "2026-04-11T20:53:45.447745Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "f188008fb9004c8ba21a45f665979d7a",
+    "timestamp": "2026-04-11T20:53:45.034672Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "a10f3da2477c4200844a5742f6b9da24",
+    "timestamp": "2026-04-11T20:38:23.279413Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "ba0796de07a443c0ac4a657cc51a7d6d",
+    "timestamp": "2026-04-11T20:38:23.125717Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "7127dacc401a49469b11f2a0ea891bb5",
+    "timestamp": "2026-04-11T20:38:23.023433Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "0b06e0e7babd405eab810769fee90773",
+    "timestamp": "2026-04-11T20:38:22.932530Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "7df0125070294628b7b3a5f1361bb74c",
+    "timestamp": "2026-04-11T20:32:15.497184Z",
+    "total_signals": 3,
+    "ventas_count": 3,
+    "facturas_count": 0,
+    "document_type": "ventas",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "cb4e8372cb594fe294de4d543fec2db2",
+    "timestamp": "2026-04-11T20:28:29.795289Z",
+    "total_signals": 0,
+    "ventas_count": 2,
+    "facturas_count": 2,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "c74cfd5e7f2f40a79b74dceafe7788fa",
+    "timestamp": "2026-04-11T20:28:29.565591Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "HIGH",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "0e2f4cb72b114d1181873f6b3c8f4088",
+    "timestamp": "2026-04-11T20:28:29.352555Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "4a923cbf355c4bb6b9dade8fccd8e238",
+    "timestamp": "2026-04-11T20:28:29.194710Z",
+    "total_signals": 0,
+    "ventas_count": 1,
+    "facturas_count": 1,
+    "document_type": "combined",
+    "priority": "LOW",
+    "quality_score": 1.0
+  },
+  {
+    "ingestion_id": "2fa9c4a25ec84d1e84950ce9b1bf913f",
+    "timestamp": "2026-04-11T19:58:06.703369Z",
+    "total_signals": 1,
+    "ventas_count": 2,
+    "facturas_count": 1
+  }
+]

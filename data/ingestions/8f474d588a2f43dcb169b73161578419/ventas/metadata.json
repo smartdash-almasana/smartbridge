@@ -1,0 +1,10 @@
+{
+  "ingestion_id": "8f474d588a2f43dcb169b73161578419",
+  "timestamp": "2026-04-11T23:56:10.660640Z",
+  "row_count": 2,
+  "columns_detected": [],
+  "mapping": {},
+  "quality_score": 0.5,
+  "risk_score": 0.4,
+  "priority": "HIGH"
+}

@@ -1,0 +1,6 @@
+sku,producto,stock_actual,stock_minimo,consumo_promedio_diario,proveedor
+SKU001,Aceite 1L,4,10,2,Proveedor A
+SKU002,Papel A4,0,5,1,Proveedor B
+SKU003,Detergente 5L,60,8,1,Proveedor C
+SKU004,Yerba 1kg,abc,6,1.5,Proveedor D
+SKU005,Azucar 1kg,12,10,0,

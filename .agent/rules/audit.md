@@ -1,0 +1,3 @@
+- Todo cambio debe pasar por Source Control
+- Prohibido modificar código fuera del Changes Sidebar
+- Cada ejecución debe ser trazable

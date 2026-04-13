@@ -1,0 +1,10 @@
+[
+  {
+    "order_id": "C1",
+    "amount": 1000.0
+  },
+  {
+    "order_id": NaN,
+    "amount": 500.0
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "ingestion_id": "3da27370093140f285a4c6caa08de19d",
+  "timestamp": "2026-04-11T21:53:58.544217Z",
+  "row_count": 2,
+  "columns_detected": [
+    "pedido",
+    "total"
+  ],
+  "mapping": {
+    "order_id": "pedido",
+    "amount": "total"
+  },
+  "quality_score": 0.8,
+  "risk_score": 0.2,
+  "priority": "MEDIUM"
+}

@@ -1,0 +1,4 @@
+- Todas las funciones deben ser deterministas
+- Prohibido uso de randomness
+- Misma entrada → misma salida obligatoria
+- No se permite fallback implícito

@@ -1,0 +1,12 @@
+{
+  "ingestion_id": "037a5fd9762b473cb1c763118ba3e4b6",
+  "timestamp": "2026-04-11T22:00:57.729354Z",
+  "row_count": 0,
+  "columns_detected": [
+    "fecha;referencia;concepto;importe;sucursal;meta_data;observaciones"
+  ],
+  "mapping": {},
+  "quality_score": 0.0,
+  "risk_score": 0.0,
+  "priority": "HIGH"
+}

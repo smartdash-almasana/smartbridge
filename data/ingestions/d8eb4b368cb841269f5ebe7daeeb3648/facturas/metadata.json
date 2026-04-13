@@ -1,0 +1,17 @@
+{
+  "ingestion_id": "d8eb4b368cb841269f5ebe7daeeb3648",
+  "timestamp": "2026-04-11T22:01:22.371665Z",
+  "row_count": 0,
+  "columns_detected": [
+    "sku",
+    "producto",
+    "stock_actual",
+    "stock_minimo",
+    "consumo_promedio_diario",
+    "proveedor"
+  ],
+  "mapping": {},
+  "quality_score": 0.0,
+  "risk_score": 0.0,
+  "priority": "HIGH"
+}

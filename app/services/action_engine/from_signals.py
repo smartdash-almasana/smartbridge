@@ -17,7 +17,11 @@ import hashlib
 import json
 from typing import Any
 
+from app.services.observability.logger import get_logger
+from app.services.action_engine.webhook_adapter import send_webhook
+
 ActionJob = dict[str, Any]
+logger = get_logger(__name__)
 
 # Fixed sentinel timestamp — no real wall-clock time is used.
 CREATED_AT_SENTINEL: str = "1970-01-01T00:00:00+00:00"
@@ -135,6 +139,34 @@ def _build_action_job(signal: dict[str, Any], tenant_id: str) -> ActionJob:
             "source_module": source_module,
         },
     }
+
+
+def execute_action_from_signal(signal: dict[str, Any]) -> dict[str, str]:
+    signal_code = str(signal.get("signal_code", "")).strip()
+    entity_ref = str(signal.get("entity_ref", "")).strip()
+    if not signal_code:
+        raise ValueError("Field 'signal_code' must be a non-empty string.")
+    if not entity_ref:
+        raise ValueError("Field 'entity_ref' must be a non-empty string.")
+
+    action_type = _resolve_action_type(signal_code)
+    result = {
+        "action_type": action_type,
+        "status": "executed",
+        "signal_code": signal_code,
+        "entity_ref": entity_ref,
+    }
+    send_webhook(result)
+    logger.info(
+        {
+            "event": "action_executed",
+            "module": __name__,
+            "signal_code": result["signal_code"],
+            "action_type": result["action_type"],
+            "status": result["status"],
+        }
+    )
+    return result
 
 
 # ---------------------------------------------------------------------------

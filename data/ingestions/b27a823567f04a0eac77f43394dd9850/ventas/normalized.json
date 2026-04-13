@@ -1,0 +1,10 @@
+[
+  {
+    "order_id": "a1",
+    "amount": 1000.5
+  },
+  {
+    "order_id": "a2",
+    "amount": -500.0
+  }
+]

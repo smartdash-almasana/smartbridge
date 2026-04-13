@@ -339,6 +339,76 @@ def _validate_output_contract(result: dict[str, Any]) -> None:
             raise ValueError(f"Field '{key}' in summary must be an int.")
 
 
+# ---------------------------------------------------------------------------
+# Public mapping API — canonical source of truth for all callers
+# (signals_engine.py, action_engine, etc. MUST delegate here)
+# ---------------------------------------------------------------------------
+
+#: Canonical action types per signal_code (superset of all callers).
+_ACTION_TYPE_REGISTRY: dict[str, str] = {
+    "order_mismatch": "review_order",
+    "order_missing_in_documents": "request_document",
+    "order_missing_in_events": "check_event_flow",
+    "amount_missing_detected": "request_document",
+    "invalid_status_detected": "manual_review",
+    "duplicate_order_detected": "flag_duplicate",
+    "data_quality_anomaly": "data_enrichment",
+}
+
+
+def map_signal_code(finding: dict[str, Any]) -> str:
+    """
+    Map finding.type → canonical signal_code.
+    Delegates to the existing private normalizer.
+    Raises ValueError for unsupported types.
+    """
+    return _normalize_signal_code(finding.get("type"))
+
+
+def normalize_severity(level: str) -> str:
+    """
+    Normalize a raw severity string → 'high' | 'medium' | 'low'.
+    Raises ValueError for unsupported levels.
+    """
+    return _normalize_severity(level)
+
+
+def extract_entity_ref(finding: dict[str, Any]) -> str:
+    """
+    Extract a canonical entity_ref string from a finding dict.
+    Uses entity_ref field; falls back to order_id inside metadata.
+    Raises ValueError if no usable ref is found.
+    """
+    # Prefer explicit entity_ref
+    entity_ref = finding.get("entity_ref")
+    if isinstance(entity_ref, str) and entity_ref.strip():
+        return entity_ref.strip()
+
+    # Fallback: reconstruct from metadata
+    metadata = finding.get("metadata") or {}
+    order_id = metadata.get("order_id") or finding.get("entity_id")
+    if order_id:
+        return f"order_{order_id}"
+
+    raise ValueError(
+        f"Cannot extract entity_ref from finding: {finding!r}"
+    )
+
+
+def map_action_type(finding: dict[str, Any]) -> str:
+    """
+    Map finding → canonical action_type string.
+    Raises ValueError for unmapped finding types.
+    """
+    signal_code = map_signal_code(finding)
+    action_type = _ACTION_TYPE_REGISTRY.get(signal_code)
+    if action_type is None:
+        raise ValueError(
+            f"No action mapping for signal_code '{signal_code}'."
+        )
+    return action_type
+
+
 def build_normalized_signals(
     payload: dict[str, Any],
     ingestion_id: str,

@@ -1,0 +1,16 @@
+{
+  "ingestion_id": "0e2f4cb72b114d1181873f6b3c8f4088",
+  "timestamp": "2026-04-11T20:28:29.335929Z",
+  "row_count": 1,
+  "columns_detected": [
+    "order_id",
+    "amount"
+  ],
+  "mapping": {
+    "order_id": "order_id",
+    "amount": "amount"
+  },
+  "quality_score": 1.0,
+  "risk_score": 0.0,
+  "priority": "LOW"
+}

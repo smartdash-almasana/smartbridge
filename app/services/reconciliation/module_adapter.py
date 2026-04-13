@@ -11,9 +11,9 @@ Internal helpers are strictly pure functions with no side effects.
 The engine is called exactly once per invocation.
 """
 
-import datetime
 import logging
 from typing import Any
+from app.core.time_provider import get_current_timestamp
 
 from .engine import reconcile_orders, ReconciliationResult
 from .constants import (
@@ -59,7 +59,7 @@ FINDING_MESSAGE_MAP: dict[str, str] = {
 
 def _now_iso() -> str:
     """Return the current UTC time as an ISO 8601 string."""
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+    return get_current_timestamp()
 
 
 # ---------------------------------------------------------------------------
@@ -420,3 +420,5 @@ def build_reconciliation_module_payload(
     )
 
     return payload
+
+

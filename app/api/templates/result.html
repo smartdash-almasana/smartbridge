@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resultado — SmartBridge</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .card {
+      background: #17171f;
+      border: 1px solid #2a2a38;
+      border-radius: 16px;
+      padding: 40px 44px;
+      max-width: 580px;
+      width: 100%;
+    }
+
+    .back { display: inline-block; color: #555570; font-size: 13px; text-decoration: none; margin-bottom: 22px; }
+    .back:hover { color: #9090b0; }
+
+    h1 { font-size: 22px; font-weight: 700; color: #f0f0fa; margin-bottom: 24px; }
+
+    /* ── Stats strip ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      background: #111118;
+      border: 1px solid #252530;
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .stat-value { font-size: 26px; font-weight: 700; color: #f0f0fa; line-height: 1; }
+    .stat-label { font-size: 11px; color: #555570; margin-top: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* detected type */
+    .doc-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a1f2e;
+      border: 1px solid #253050;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: #93c5fd;
+      font-weight: 500;
+      margin-bottom: 24px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0; }
+
+    /* ── Errors list ── */
+    h2 { font-size: 14px; font-weight: 600; color: #8888a8; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+
+    .signal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .signal-item {
+      background: #111118;
+      border: 1px solid #252530;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .sig-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+    .sig-code {
+      font-weight: 600;
+      color: #fbbf24;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 2px;
+    }
+    .sig-ref { color: #9090b0; font-size: 12px; }
+
+    .no-issues {
+      color: #22c55e;
+      background: #0c1f0f;
+      border: 1px solid #166534;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+
+    /* actions */
+    .action-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+    .action-item {
+      font-size: 13px;
+      color: #a0a0c0;
+      padding: 8px 12px;
+      border-left: 2px solid #6366f1;
+      background: #13131c;
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* footer */
+    .meta { font-size: 11px; color: #3a3a50; margin-bottom: 20px; word-break: break-all; }
+
+    .btn-back {
+      display: inline-block;
+      padding: 11px 22px;
+      background: #1e1e2c;
+      border: 1px solid #2a2a42;
+      border-radius: 8px;
+      color: #8888b0;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background .15s;
+    }
+    .btn-back:hover { background: #25253a; color: #c0c0e0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a class="back" href="/saas">← Analizar otro archivo</a>
+
+    {% if empty_result %}
+      <h1>No pudimos leer el archivo</h1>
+      <div class="error-box" style="color: #fbbf24; border-color: #78350f; background: #2f1c0b; margin-top: 20px;">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">&#9888; {{ empty_message }}</div>
+        <p style="margin-top: 8px; font-size: 13px;">Asegurate de que el archivo tenga al menos una columna de pedidos (como &ldquo;Pedido&rdquo;, &ldquo;N&uacute;mero de orden&rdquo; o &ldquo;ID&rdquo;).</p>
+      </div>
+      <a class="btn-back" href="/saas" style="margin-top: 24px; display: inline-block;">Probar con otro archivo</a>
+    {% else %}
+
+    <!-- BLOQUE 1 - CALIDAD DEL ARCHIVO -->
+    <h2>Calidad del archivo</h2>
+    {% if has_data_issues %}
+      <div class="error-box" style="color: #fbbf24; border-color: #78350f; background: #2f1c0b; margin-bottom: 16px; padding: 12px 16px; border-radius: 8px;">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">⚠ Nivel de calidad: {{ trust_level }}</div>
+        <ul style="margin-left: 20px; list-style-type: disc; font-size: 13px; margin-top: 6px;">
+          <li>Algunos datos no se pudieron interpretar correctamente.</li>
+          <li>Parte de la información fue descartada del análisis.</li>
+        </ul>
+      </div>
+    {% else %}
+      <div class="no-issues" style="margin-bottom: 16px; padding: 10px 14px;">✓ Archivo procesado correctamente.</div>
+    {% endif %}
+
+    <div style="background: #111118; border: 1px solid #252530; border-radius: 10px; padding: 18px 20px; margin-bottom: 28px;">
+      <h3 style="font-size: 15px; margin-bottom: 14px; color: #f0f0fa;">Resumen del archivo</h3>
+      <ul style="list-style: none; font-size: 14px; color: #a0a0c0; line-height: 1.8;">
+        <li><strong style="color: #6c6c88;">Filas totales:</strong> {{ total_raw_rows }}</li>
+        <li><strong style="color: #22c55e;">Filas válidas:</strong> {{ valid_rows }}</li>
+        <li><strong style="color: #fb7185;">Filas descartadas:</strong> {{ discarded_rows }}</li>
+      </ul>
+      <p style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #252530; font-size: 14px; color: #a0a0c0;">
+        Nivel de confianza: 
+        <strong style="
+          {% if trust_level == 'ALTO' %} color: #22c55e;
+          {% elif trust_level == 'MEDIO' %} color: #fbbf24;
+          {% else %} color: #ef4444; {% endif %}
+        ">{{ trust_level }}</strong>
+      </p>
+    </div>
+
+    <!-- Tipo detectado -->
+    <div class="doc-type">
+      <span class="dot"></span>
+      Tipo detectado: <strong>{{ document_type }}</strong>
+    </div>
+
+    <!-- BLOQUE 2 - ANÁLISIS DE OPERACIONES -->
+    <h2>Análisis de operaciones</h2>
+    {% if has_signals %}
+      <ul class="signal-list">
+        {% for signal in signals %}
+          <li class="signal-item">
+            <span class="sig-icon">⚠</span>
+            <div>
+              <div class="sig-code">{{ signal.human_message or 'Hay una inconsistencia en tus datos' }}</div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="no-issues">✓ No se detectaron inconsistencias.</div>
+    {% endif %}
+
+    <!-- Acciones sugeridas -->
+    {% if suggested_actions and suggested_actions | length > 0 %}
+      <h2>Qué hacer</h2>
+      <ul class="action-list">
+        {% for action in suggested_actions %}
+          <li class="action-item">&rarr; {{ action }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="meta">Referencia: {{ ingestion_id }}</div>
+    <a class="btn-back" href="/saas">Analizar otro archivo</a>
+    {% endif %}
+  </div>
+</body>
+</html>

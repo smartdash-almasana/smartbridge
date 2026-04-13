@@ -1,0 +1,1 @@
+from groq import Groq; client = Groq(); completion = client.chat.completions.create(model='llama-3.3-70b-versatile', messages=[{'role': 'user', 'content': 'Si lees esto, Groq funciona'}]); print(completion.choices[0].message.content)
