@@ -22,6 +22,7 @@ from pydantic import BaseModel, field_validator
 
 from app.services.findings_engine import build_findings
 from app.services.orchestrator.run_pipeline import run_pipeline
+from app.api.routes.clarifications import router as clarifications_router
 
 router = APIRouter(prefix="/api/v1", tags=["pipeline"])
 

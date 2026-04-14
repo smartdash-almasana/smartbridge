@@ -34,6 +34,7 @@ SIGNAL_CODE_MODIFIER: dict[str, int] = {
     "order_mismatch": 12,
     "order_missing_in_events": 8,
     "order_missing_in_documents": 5,
+    "stock_mismatch_detected": 10,
 }
 
 SIGNAL_CODE_ALIAS: dict[str, str] = {
@@ -42,6 +43,7 @@ SIGNAL_CODE_ALIAS: dict[str, str] = {
     "order_missing_in_documents": "order_missing_in_documents",
     "amount_mismatch": "order_mismatch",
     "missing_invoice": "order_missing_in_documents",
+    "stock_mismatch_detected": "stock_mismatch_detected",
 }
 
 ENTITY_IMPORTANCE_BY_KIND: dict[str, float] = {
@@ -353,6 +355,7 @@ _ACTION_TYPE_REGISTRY: dict[str, str] = {
     "invalid_status_detected": "manual_review",
     "duplicate_order_detected": "flag_duplicate",
     "data_quality_anomaly": "data_enrichment",
+    "stock_mismatch_detected": "review_stock",
 }
 
 

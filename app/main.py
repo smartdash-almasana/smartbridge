@@ -8,6 +8,9 @@ from app.api.routes.saas import router as saas_router
 from app.api.routes.landing import router as landing_router
 from app.api.routes.entity import router as entity_router
 from app.api.server import router as pipeline_router
+from app.api.routes.clarifications import router as clarifications_router
+from app.api.routes.jobs import router as jobs_router
+from app.api.routes.actions import router as actions_router
 
 from app.services.signals.lifecycle_persistence import register_database_upsert_signal
 from app.services.signals.close_signal import register_database_close_signal
@@ -36,6 +39,9 @@ app.include_router(telegram_router)
 app.include_router(saas_router)
 app.include_router(entity_router)
 app.include_router(pipeline_router)
+app.include_router(clarifications_router)
+app.include_router(jobs_router)
+app.include_router(actions_router)
 
 
 @app.post("/run")

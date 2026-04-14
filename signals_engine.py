@@ -59,6 +59,10 @@ def normalize_priority(level: str) -> str:
 
 def extract_entity_id(finding: Dict[str, Any], index: int) -> str:
     """Internal helper: build an entity_ref string from a raw finding."""
+    # Respect explicit entity_ref if already set by upstream adapter
+    if finding.get("entity_ref"):
+        return str(finding["entity_ref"])
+
     metadata = finding.get("metadata") or {}
 
     if metadata.get("order_id"):
