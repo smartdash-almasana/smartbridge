@@ -55,6 +55,24 @@ def test_urgency_classified() -> None:
     assert classify_urgency(low) == "low"
 
 
+def test_urgency_conservative_fallback_keeps_legacy_medium() -> None:
+    assert classify_urgency({"finding_id": "fnd_no_data"}) == "medium"
+
+
 def test_empty_findings_returns_empty_list() -> None:
     assert findings_to_messages([], "ui") == []
+
+
+def test_legacy_suggested_action_is_mapped_to_action_description() -> None:
+    findings = [
+        {
+            "finding_id": "fnd_legacy_1",
+            "suggested_action": "Validar contra inventario fisico.",
+        }
+    ]
+
+    messages = findings_to_messages(findings, "ui")
+    assert len(messages) == 1
+    assert messages[0]["action_required"] is True
+    assert messages[0]["action_description"] == "Validar contra inventario fisico."
 
