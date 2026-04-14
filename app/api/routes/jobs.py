@@ -15,6 +15,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from app.services.clarification_service import has_pending_clarifications
+from app.services.audit_trail import log_job_event
 from app.services.job_service import get_job, mark_job_done
 from app.services.smartcounter_bridge.execution import (
     persist_uncertainties_if_blocked,
@@ -37,6 +38,11 @@ def rerun_job(job_id: str) -> dict[str, Any]:
     if job is None:
         raise HTTPException(status_code=404, detail=f"Job {job_id!r} not found")
 
+    try:
+        log_job_event(job_id, "rerun_requested", {"route": "/api/v1/jobs/{job_id}/rerun"})
+    except Exception:
+        pass
+
     if has_pending_clarifications():
         return {
             "status": "blocked",
@@ -51,6 +57,15 @@ def rerun_job(job_id: str) -> dict[str, Any]:
         # New uncertainties appeared — do not proceed
         persist_uncertainties_if_blocked(result)
         return {**result, "job_id": job_id}
+
+    try:
+        log_job_event(
+            job_id,
+            "findings_generated",
+            {"findings_count": len(result.get("findings", []))},
+        )
+    except Exception:
+        pass
 
     signals = findings_to_signals(result["findings"])
 
