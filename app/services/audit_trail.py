@@ -92,3 +92,52 @@ def get_job_events(job_id: str) -> list[dict[str, Any]]:
         )
     return events
 
+
+def list_recent_job_events(limit: int = 200) -> list[dict[str, Any]]:
+    """Read recent audit events without creating tables or mutating state."""
+    if not isinstance(limit, int) or limit <= 0:
+        raise ValueError("'limit' must be a positive integer.")
+
+    if not _DB_PATH.exists():
+        return []
+
+    conn = _get_connection()
+    try:
+        table_exists = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='job_audit_events' LIMIT 1"
+        ).fetchone()
+        if table_exists is None:
+            return []
+
+        rows = conn.execute(
+            """
+            SELECT id, job_id, event_type, payload, created_at
+            FROM job_audit_events
+            ORDER BY created_at DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    events: list[dict[str, Any]] = []
+    for row in rows:
+        try:
+            payload = json.loads(row[3])
+            if not isinstance(payload, dict):
+                payload = {}
+        except Exception:
+            payload = {}
+
+        events.append(
+            {
+                "id": row[0],
+                "job_id": row[1],
+                "event_type": row[2],
+                "payload": payload,
+                "created_at": row[4],
+            }
+        )
+    return events
+

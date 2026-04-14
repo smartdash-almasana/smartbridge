@@ -1,7 +1,8 @@
 """
 Integration tests for clarification persistence and blocking behavior.
 """
-import sqlite3
+import shutil
+import uuid
 from pathlib import Path
 from unittest.mock import patch
 
@@ -16,11 +17,16 @@ from app.run_pipeline import run_pipeline
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(autouse=True)
-def isolated_db(tmp_path: Path, monkeypatch):
-    """Use a temporary DB for each test."""
-    test_db = tmp_path / "clarifications.db"
+def isolated_db(monkeypatch):
+    """Use an isolated local DB path for each test."""
+    base = Path(".tmp_integration")
+    base.mkdir(parents=True, exist_ok=True)
+    case_dir = base / f"clarifications_{uuid.uuid4().hex}"
+    case_dir.mkdir(parents=True, exist_ok=True)
+    test_db = case_dir / "clarifications.db"
     monkeypatch.setattr(cs, "_DB_PATH", test_db)
     yield test_db
+    shutil.rmtree(case_dir, ignore_errors=True)
 
 
 # ---------------------------------------------------------------------------

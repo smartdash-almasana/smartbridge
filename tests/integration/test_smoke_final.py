@@ -4,6 +4,8 @@ Smoke test: three end-to-end flows.
   2. Uncertain    → blocked + clarifications saved
   3. Resolve + rerun → ok + signals + batch_result
 """
+import shutil
+import uuid
 from pathlib import Path
 from unittest.mock import patch
 
@@ -14,8 +16,14 @@ from app.run_pipeline import run_pipeline
 
 
 @pytest.fixture(autouse=True)
-def isolated_db(tmp_path: Path, monkeypatch):
-    monkeypatch.setattr(cs, "_DB_PATH", tmp_path / "clarifications.db")
+def isolated_db(monkeypatch):
+    base = Path(".tmp_integration")
+    base.mkdir(parents=True, exist_ok=True)
+    case_dir = base / f"smoke_final_{uuid.uuid4().hex}"
+    case_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(cs, "_DB_PATH", case_dir / "clarifications.db")
+    yield
+    shutil.rmtree(case_dir, ignore_errors=True)
 
 
 _MOCK_OK = {

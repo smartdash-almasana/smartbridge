@@ -5,8 +5,10 @@ Integration tests: rerun flow after human resolution.
   3. rerun does not duplicate clarifications
   4. rerun does not call action_engine directly
 """
+import shutil
+import uuid
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -18,10 +20,16 @@ from app.run_pipeline import run_pipeline
 
 
 @pytest.fixture(autouse=True)
-def isolated_db(tmp_path: Path, monkeypatch):
-    db = tmp_path / "clarifications.db"
+def isolated_db(monkeypatch):
+    base = Path(".tmp_integration")
+    base.mkdir(parents=True, exist_ok=True)
+    case_dir = base / f"rerun_flow_{uuid.uuid4().hex}"
+    case_dir.mkdir(parents=True, exist_ok=True)
+    db = case_dir / "clarifications.db"
     monkeypatch.setattr(cs, "_DB_PATH", db)
     monkeypatch.setattr(js, "_DB_PATH", db)
+    yield
+    shutil.rmtree(case_dir, ignore_errors=True)
 
 
 @pytest.fixture()

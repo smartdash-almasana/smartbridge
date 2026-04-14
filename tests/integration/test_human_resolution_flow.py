@@ -5,6 +5,8 @@ Integration tests: human resolution flow.
   - rerun continues after resolution
   - resolved clarification not duplicated
 """
+import shutil
+import uuid
 from pathlib import Path
 from unittest.mock import patch
 
@@ -16,8 +18,14 @@ from app.run_pipeline import run_pipeline
 
 
 @pytest.fixture(autouse=True)
-def isolated_db(tmp_path: Path, monkeypatch):
-    monkeypatch.setattr(cs, "_DB_PATH", tmp_path / "clarifications.db")
+def isolated_db(monkeypatch):
+    base = Path(".tmp_integration")
+    base.mkdir(parents=True, exist_ok=True)
+    case_dir = base / f"human_resolution_{uuid.uuid4().hex}"
+    case_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(cs, "_DB_PATH", case_dir / "clarifications.db")
+    yield
+    shutil.rmtree(case_dir, ignore_errors=True)
 
 
 @pytest.fixture()
