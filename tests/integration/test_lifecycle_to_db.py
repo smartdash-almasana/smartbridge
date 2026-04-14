@@ -15,6 +15,7 @@ def _apply_lifecycle_to_db(conn: sqlite3.Connection, lifecycle_result: dict, ing
         upsert_signal(
             conn,
             {
+                "tenant_id": "tenant-x",
                 "signal_code": signal["signal_code"],
                 "entity_ref": signal["entity_ref"],
                 "ingestion_id": ingestion_id,
@@ -26,6 +27,7 @@ def _apply_lifecycle_to_db(conn: sqlite3.Connection, lifecycle_result: dict, ing
         close_signal(
             conn,
             {
+                "tenant_id": "tenant-x",
                 "signal_code": signal["signal_code"],
                 "entity_ref": signal["entity_ref"],
                 "ingestion_id": ingestion_id,
@@ -85,8 +87,15 @@ def test_lifecycle_to_db_rejects_invalid_upsert_payload() -> None:
     create_signals_lifecycle_tables(conn)
 
     try:
-        upsert_signal(conn, {"signal_code": "order_mismatch", "entity_ref": "order_1", "ingestion_id": "ing_1"})
+        upsert_signal(
+            conn,
+            {
+                "signal_code": "order_mismatch",
+                "entity_ref": "order_1",
+                "ingestion_id": "ing_1",
+                "timestamp": "2026-04-01T12:00:00Z",
+            },
+        )
         assert False, "Expected ValueError"
     except ValueError as exc:
-        assert "timestamp" in str(exc)
-
+        assert "tenant_id" in str(exc)
