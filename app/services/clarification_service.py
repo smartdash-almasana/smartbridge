@@ -3,7 +3,7 @@ Clarification persistence service for smartcounter uncertainties.
 Blocks pipeline until human validation resolves all uncertainties.
 """
 import sqlite3
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -46,7 +46,7 @@ def save_clarifications(uncertainties: list[dict[str, Any]]) -> list[int]:
     conn = _get_connection()
     create_clarifications_table(conn)
 
-    created_at = datetime.utcnow().isoformat()
+    created_at = datetime.now(UTC).isoformat()
     ids = []
 
     for u in uncertainties:
