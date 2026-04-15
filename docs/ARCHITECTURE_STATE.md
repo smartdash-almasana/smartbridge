@@ -25,18 +25,18 @@ Purpose:
 
   * Status: DONE
   * Type: deterministic (email + alias)
-  * Responsibility: map input → entity_id
+  * Responsibility: map input -> entity_id
 
 * **findings_engine**
 
   * Status: DONE
   * Type: deterministic
-  * Responsibility: rows → findings
+  * Responsibility: rows -> findings
 
 * **normalized_signals**
 
   * Status: CORE (CANONICAL)
-  * Responsibility: findings → normalized signals
+  * Responsibility: findings -> normalized signals
 
 * **global_signals**
 
@@ -46,7 +46,7 @@ Purpose:
 * **action_engine**
 
   * Status: ACTIVE
-  * Responsibility: signals → action jobs
+  * Responsibility: signals -> action jobs
 
 ---
 
@@ -99,14 +99,14 @@ These must be reduced or absorbed into normalized_signals.
 
 ```text
 INPUT
-→ ingestion
-→ entity_resolution
-→ findings_engine
-→ normalized_signals
-→ global_signals (lifecycle)
-→ action_engine
-→ digest
-→ OUTPUT
+-> ingestion
+-> entity_resolution
+-> findings_engine
+-> normalized_signals
+-> global_signals (lifecycle)
+-> action_engine
+-> digest
+-> OUTPUT
 ```
 
 This flow MUST NOT be broken.
@@ -171,11 +171,9 @@ This flow MUST NOT be broken.
 ## 7. KNOWN ISSUES
 
 * Multiple signal layers exist (fragmentation)
-
-* signals_engine.py is duplicated and not canonical
-
+* signals_engine.py is still active in current runtime
+* consolidation is still pending
 * reconciliation/signals contains overlapping logic
-
 * Contract mismatch:
 
   * entity_id (findings)
@@ -193,9 +191,9 @@ CONSOLIDATE SIGNALS LAYER
 
 Steps:
 
-1. Move all mapping logic → normalized_signals
+1. Move all mapping logic -> normalized_signals
 2. Remove duplicated signal generation
-3. Ensure findings → normalized_signals is the ONLY path
+3. Ensure findings -> normalized_signals is the ONLY path
 4. Keep lifecycle (global_signals) unchanged
 
 ---
