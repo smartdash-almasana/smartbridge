@@ -6,6 +6,7 @@ from typing import Any
 from app.services import audit_trail
 from app.services.delivery_adapter import deliver_messages
 from app.services.inbox_service import get_operational_inbox
+from app.services.recipient_resolution import resolve_recipient
 
 
 # ---------------------------------------------------------------------------
@@ -69,7 +70,7 @@ def orchestrate_notifications(
             skipped.append({"reason": f"urgency='{urgency}' skipped in v1", "item": item})
             continue
 
-        outbound = _build_outbound_message(item)
+        outbound = _build_outbound_message(item, tenant_id_clean, channel)
         grouped.setdefault(channel, []).append(outbound)
 
     # --- Deliver, one call per channel ---
@@ -113,24 +114,24 @@ def orchestrate_notifications(
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _build_outbound_message(item: dict[str, Any]) -> dict[str, Any]:
-    """Build a minimal outbound message suitable for deliver_messages(...)."""
+def _build_outbound_message(
+    item: dict[str, Any],
+    tenant_id: str,
+    channel: str,
+) -> dict[str, Any]:
+    """Build a minimal outbound message suitable for deliver_messages(...).
+
+    Recipient is resolved via recipient_resolution (canonical, never invented).
+    If the item already carries an explicit recipient field it takes priority.
+    """
     summary = item.get("summary") or item.get("title") or ""
-    recipient = _resolve_recipient(item)
-    return {"message_text": str(summary).strip(), "recipient": recipient}
-
-
-def _resolve_recipient(item: dict[str, Any]) -> str | None:
-    """Resolve recipient explicitly — never invent one."""
+    # Item-level explicit recipient wins; otherwise delegate to canonical resolver.
     raw = item.get("recipient")
     if isinstance(raw, str) and raw.strip():
-        return raw.strip()
-    # Fallback: look for known safe explicit field in entity_ref (only if string)
-    entity_ref = item.get("entity_ref")
-    if isinstance(entity_ref, str) and entity_ref.strip():
-        # entity_ref is an identifier, not a contact — do NOT use as recipient.
-        pass
-    return None
+        recipient: str | None = raw.strip()
+    else:
+        recipient = resolve_recipient(tenant_id, channel)
+    return {"message_text": str(summary).strip(), "recipient": recipient}
 
 
 def _audit_orchestration_event(
