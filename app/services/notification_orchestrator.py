@@ -6,17 +6,11 @@ from typing import Any
 from app.services import audit_trail
 from app.services.delivery_adapter import deliver_messages
 from app.services.inbox_service import get_operational_inbox
+from app.services.notification_policy import apply_notification_policy
 from app.services.recipient_resolution import resolve_recipient
 
 
-# ---------------------------------------------------------------------------
-# Channel policy
-# ---------------------------------------------------------------------------
-_CHANNEL_MAP: dict[str, str | None] = {
-    "alta": "telegram",
-    "media": "email",
-    "baja": None,  # skip in v1
-}
+# Channel policy is now owned by notification_policy.py.
 
 
 # ---------------------------------------------------------------------------
@@ -57,21 +51,20 @@ def orchestrate_notifications(
         {"dry_run": dry_run, "limit": limit, "total_priority_items": len(priority_items)},
     )
 
-    # --- Select up to `limit` items and route by urgency ---
-    selected = priority_items[:limit]
-    grouped: dict[str, list[dict[str, Any]]] = {}  # channel -> outbound messages
-    skipped: list[dict[str, Any]] = []
+    # --- Apply notification policy (anti-noise, channel caps, dedup) ---
+    policy_result = apply_notification_policy(priority_items, limit=limit)
+    skipped: list[dict[str, Any]] = policy_result["skipped"]
 
-    for item in selected:
-        urgency = str(item.get("urgency") or "baja").strip().lower()
-        channel = _CHANNEL_MAP.get(urgency)
-
-        if channel is None:
-            skipped.append({"reason": f"urgency='{urgency}' skipped in v1", "item": item})
+    # Build outbound messages grouped by channel.
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for channel, items in policy_result["selected_by_channel"].items():
+        if not items:
             continue
-
-        outbound = _build_outbound_message(item, tenant_id_clean, channel)
-        grouped.setdefault(channel, []).append(outbound)
+        outbound_list = [
+            _build_outbound_message(item, tenant_id_clean, channel)
+            for item in items
+        ]
+        grouped[channel] = outbound_list
 
     # --- Deliver, one call per channel ---
     deliveries: list[dict[str, Any]] = []

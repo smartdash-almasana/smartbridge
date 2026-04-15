@@ -150,20 +150,24 @@ def test_baja_is_skipped(isolated_db) -> None:
 # ---------------------------------------------------------------------------
 
 def test_respects_limit(isolated_db) -> None:
+    """limit is the outer bound of candidates considered.
+
+    With limit=1 only 1 item is passed to the policy, so selected_count=1
+    regardless of channel caps.
+    """
     tenant = "tenant_limit"
     items = [_make_item("alta", i) for i in range(10)]
     with patch("app.services.notification_orchestrator.get_operational_inbox") as mock_inbox, \
          patch("app.services.notification_orchestrator.deliver_messages") as mock_deliver:
         mock_inbox.return_value = _inbox_with_items(tenant, items)
         mock_deliver.return_value = {"sent_count": 0, "failed_count": 0, "results": []}
-        result = no_.orchestrate_notifications(tenant, dry_run=True, limit=3)
+        result = no_.orchestrate_notifications(tenant, dry_run=True, limit=1)
 
-    # Only 3 out of 10 items processed
-    assert result["selected_count"] == 3
-    # deliver_messages called once for telegram with 3 messages
+    # limit=1 → only 1 candidate considered → 1 selected (telegram cap not reached)
+    assert result["selected_count"] == 1
     assert mock_deliver.call_count == 1
     passed_messages = mock_deliver.call_args.kwargs["messages"]
-    assert len(passed_messages) == 3
+    assert len(passed_messages) == 1
 
 
 # ---------------------------------------------------------------------------
@@ -184,6 +188,7 @@ def test_maintains_priority_order(isolated_db) -> None:
         no_.orchestrate_notifications(tenant, dry_run=True, limit=3)
 
     # telegram call should have messages for item[0] and item[2] in original order
+    # (telegram cap=2, both alta items fit)
     tg_call = next(c for c in mock_deliver.call_args_list if c.kwargs["channel"] == "telegram")
     tg_messages = tg_call.kwargs["messages"]
     assert tg_messages[0]["message_text"] == "Summary alta 0"
@@ -195,6 +200,7 @@ def test_maintains_priority_order(isolated_db) -> None:
 # ---------------------------------------------------------------------------
 
 def test_groups_by_channel_single_call(isolated_db) -> None:
+    """All alta items go to telegram in ONE call (capped at 2 by policy)."""
     tenant = "tenant_group"
     items = [_make_item("alta", i) for i in range(3)]
     with patch("app.services.notification_orchestrator.get_operational_inbox") as mock_inbox, \
@@ -203,10 +209,12 @@ def test_groups_by_channel_single_call(isolated_db) -> None:
         mock_deliver.return_value = {"sent_count": 0, "results": []}
         result = no_.orchestrate_notifications(tenant, dry_run=True, limit=3)
 
-    # All 3 alta items go to telegram in ONE call
+    # Policy cap for telegram = 2, so only 2 of 3 items reach deliver_messages
     assert mock_deliver.call_count == 1
     assert mock_deliver.call_args.kwargs["channel"] == "telegram"
-    assert len(mock_deliver.call_args.kwargs["messages"]) == 3
+    assert len(mock_deliver.call_args.kwargs["messages"]) == 2
+    # 1 skipped by cap
+    assert result["skipped_count"] == 1
 
 
 def test_two_channels_two_calls(isolated_db) -> None:
