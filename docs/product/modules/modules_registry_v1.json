@@ -1,0 +1,174 @@
+{
+    "registry_version": "1.0",
+    "registry_name": "SmartPyME / SmartCounter Modules Registry",
+    "category": "commercial_entry_modules",
+    "modules": [
+        {
+            "module_id": "cobranzas_vencidas",
+            "module_version": "1.0",
+            "name": "Cobranzas vencidas",
+            "status": "active",
+            "category": "commercial_entry_module",
+            "primary_entity": "client",
+            "technical_complexity": "low",
+            "doc_path": "docs/product/modules/cobranzas_vencidas_v1.md",
+            "source_types": [
+                "csv",
+                "xlsx",
+                "google_sheet",
+                "api"
+            ],
+            "required_fields": [
+                "cliente",
+                "monto",
+                "fecha_vencimiento",
+                "estado"
+            ],
+            "optional_fields": [
+                "fecha_emision",
+                "telefono",
+                "email",
+                "vendedor",
+                "segmento",
+                "fecha_ultimo_contacto",
+                "moneda",
+                "numero_factura",
+                "saldo_adeudado"
+            ],
+            "core_outputs": [
+                "normalized_rows",
+                "findings",
+                "suggested_actions",
+                "summary",
+                "validation_errors"
+            ],
+            "findings_catalog": [
+                "deuda_vencida",
+                "deuda_alto_monto",
+                "cliente_concentrado",
+                "cartera_envejecida",
+                "sin_dato_de_contacto",
+                "sin_gestion_reciente"
+            ],
+            "actions_catalog": [
+                "enviar_recordatorio",
+                "escalar_a_llamada",
+                "suspender_credito",
+                "priorizar_revision_manual"
+            ]
+        },
+        {
+            "module_id": "stock_roto",
+            "module_version": "1.0",
+            "name": "Stock roto / quiebre de stock",
+            "status": "active",
+            "category": "commercial_entry_module",
+            "primary_entity": "product",
+            "technical_complexity": "medium",
+            "doc_path": "docs/product/modules/stock_roto_v1.md",
+            "source_types": [
+                "csv",
+                "xlsx",
+                "google_sheet",
+                "api"
+            ],
+            "required_fields": [
+                "sku",
+                "producto",
+                "stock_actual",
+                "stock_minimo"
+            ],
+            "optional_fields": [
+                "ventas_30_dias",
+                "ventas_90_dias",
+                "costo_unitario",
+                "precio_venta",
+                "lead_time_dias",
+                "categoria",
+                "proveedor",
+                "estado_producto",
+                "fecha_ultima_venta"
+            ],
+            "core_outputs": [
+                "normalized_rows",
+                "findings",
+                "suggested_actions",
+                "summary",
+                "validation_errors"
+            ],
+            "findings_catalog": [
+                "riesgo_quiebre_stock",
+                "stock_bajo_minimo",
+                "stock_inmovilizado",
+                "producto_critico_sin_cobertura",
+                "capital_inmovilizado_alto"
+            ],
+            "actions_catalog": [
+                "adelantar_reposicion",
+                "priorizar_compra_urgente",
+                "liquidar_stock_estancado",
+                "priorizar_revision_manual"
+            ]
+        },
+        {
+            "module_id": "conciliacion_ventas_ml",
+            "module_version": "1.0",
+            "name": "Conciliación de ventas / Mercado Libre",
+            "status": "active",
+            "category": "commercial_entry_module",
+            "primary_entity": "sale_order",
+            "technical_complexity": "high",
+            "doc_path": "docs/product/modules/conciliacion_ventas_ml_v1.md",
+            "source_types": [
+                "csv",
+                "xlsx",
+                "google_sheet",
+                "api"
+            ],
+            "required_fields": [
+                "order_id",
+                "sku",
+                "monto_venta_bruta",
+                "monto_acreditado",
+                "comision_ml"
+            ],
+            "optional_fields": [
+                "costo_envio",
+                "retenciones",
+                "devolucion",
+                "reclamo_abierto",
+                "fecha_venta",
+                "fecha_acreditacion",
+                "publicacion_id",
+                "cantidad",
+                "costo_producto",
+                "moneda",
+                "estado_operacion",
+                "campaign_cost"
+            ],
+            "core_outputs": [
+                "normalized_rows",
+                "findings",
+                "suggested_actions",
+                "summary",
+                "validation_errors"
+            ],
+            "findings_catalog": [
+                "venta_no_conciliada",
+                "margen_neto_negativo",
+                "margen_parcial_critico",
+                "fondos_retenidos_reclamo",
+                "costo_logistico_desproporcionado",
+                "retencion_relevante",
+                "acreditacion_demorada"
+            ],
+            "actions_catalog": [
+                "revisar_conciliacion",
+                "ajustar_precio_publicacion",
+                "revisar_logistica",
+                "seguir_reclamo",
+                "priorizar_revision_manual"
+            ]
+        }
+    ]
+}
