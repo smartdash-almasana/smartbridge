@@ -1,0 +1,32 @@
+[
+  {
+    "tenant_id": "pyme_ecommerce_001",
+    "rule_id": "unknown_status",
+    "overrides": {
+      "enabled": true,
+      "severity": "low",
+      "condition.valid_values": [
+        "paid",
+        "pending",
+        "cancelled",
+        "fulfilled",
+        "refunded"
+      ]
+    }
+  },
+  {
+    "tenant_id": "pyme_marketplace_002",
+    "rule_id": "missing_amount",
+    "overrides": {
+      "enabled": false
+    }
+  },
+  {
+    "tenant_id": "pyme_mayorista_003",
+    "rule_id": "order_mismatch",
+    "overrides": {
+      "severity": "critical",
+      "health_penalty_weight": 20
+    }
+  }
+]

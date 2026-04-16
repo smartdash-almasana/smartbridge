@@ -12,7 +12,9 @@ The engine is called exactly once per invocation.
 """
 
 import logging
+from functools import lru_cache
 from typing import Any
+from app.catalog import get_effective_rules
 from app.core.time_provider import get_current_timestamp
 
 from .engine import reconcile_orders, ReconciliationResult
@@ -22,7 +24,6 @@ from .constants import (
     ACTION_PRIORITY,
     ACTION_REVIEW_MISMATCHES,
     HEALTH_SCORE_MAX,
-    HEALTH_SCORE_PENALTY_PER_SIGNAL,
     MODULE_ID,
     SEVERITY_ORDER,
     SIGNAL_MISSING_IN_DOCUMENTS,
@@ -51,6 +52,13 @@ FINDING_MESSAGE_MAP: dict[str, str] = {
     ),
     "order_mismatch": "Order data mismatch between events and documents",
 }
+
+_HEALTH_WEIGHT_RULE_IDS: tuple[str, ...] = (
+    "order_mismatch",
+    "order_missing_in_events",
+    "order_missing_in_documents",
+)
+_DEFAULT_UNKNOWN_SIGNAL_PENALTY: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -126,23 +134,66 @@ def transform_signals_to_findings(result: ReconciliationResult) -> list[Finding]
 # Summary helpers
 # ---------------------------------------------------------------------------
 
-def compute_health_score(summary: Summary) -> int:
+@lru_cache(maxsize=1)
+def _load_health_penalty_weights() -> dict[str, int]:
+    rules = get_effective_rules()
+    weights: dict[str, int] = {}
+
+    for rule in rules:
+        rule_id = rule.get("rule_id")
+        applies_to = rule.get("applies_to", {})
+        modules = applies_to.get("module", [])
+
+        if not isinstance(rule_id, str):
+            continue
+        if rule_id not in _HEALTH_WEIGHT_RULE_IDS:
+            continue
+        if "reconciliation" not in modules:
+            continue
+
+        weight = rule.get("health_penalty_weight")
+        if not isinstance(weight, (int, float)) or isinstance(weight, bool):
+            raise ValueError(f"Catalog rule '{rule_id}' must define numeric health_penalty_weight.")
+        weights[rule_id] = int(weight)
+
+    missing = sorted(set(_HEALTH_WEIGHT_RULE_IDS) - set(weights.keys()))
+    if missing:
+        raise ValueError(f"Catalog missing health_penalty_weight for rules: {missing}")
+
+    return weights
+
+
+def compute_health_score(
+    summary: Summary,
+    signals: list[dict[str, Any]] | None = None,
+) -> int:
     """
     Compute a health score from 0 to 100.
 
     Formula:
-        health_score = max(0, HEALTH_SCORE_MAX - (total_signals × PENALTY))
+        health_score = max(0, HEALTH_SCORE_MAX - sum(weight(signal_type)))
 
     Where:
-        HEALTH_SCORE_MAX             = 100  (see constants.py)
-        HEALTH_SCORE_PENALTY_PER_SIGNAL = 10
+        HEALTH_SCORE_MAX = 100  (see constants.py)
+        weight(signal_type) comes from catalog health_penalty_weight.
 
     A score of 100 means no issues were detected.
-    Each signal reduces the score by HEALTH_SCORE_PENALTY_PER_SIGNAL.
+    Each signal reduces the score by its configured rule weight.
     The score is clamped to a minimum of 0.
     """
-    total_signals: int = summary.get("total_signals", 0)
-    penalty: int = total_signals * HEALTH_SCORE_PENALTY_PER_SIGNAL
+    if not signals:
+        return HEALTH_SCORE_MAX
+
+    weights = _load_health_penalty_weights()
+    penalty = 0
+
+    for signal in signals:
+        signal_type = signal.get("type")
+        if isinstance(signal_type, str):
+            penalty += weights.get(signal_type, _DEFAULT_UNKNOWN_SIGNAL_PENALTY)
+        else:
+            penalty += _DEFAULT_UNKNOWN_SIGNAL_PENALTY
+
     return max(0, HEALTH_SCORE_MAX - penalty)
 
 
@@ -160,7 +211,7 @@ def build_summary(result: ReconciliationResult) -> Summary:
         "missing_in_documents": len(result.get("missing_in_documents", [])),
         "total_signals": len(result.get("signals", [])),
     }
-    summary["health_score"] = compute_health_score(summary)
+    summary["health_score"] = compute_health_score(summary, result.get("signals", []))
     return summary
 
 

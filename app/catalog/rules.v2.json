@@ -1,0 +1,172 @@
+[
+  {
+    "rule_id": "unknown_status",
+    "description": "Detecta estados de orden no reconocidos por el sistema",
+    "enabled": true,
+    "applies_to": {
+      "module": ["findings_engine"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "set_membership",
+      "field": "status",
+      "transform": "strip_lower",
+      "valid_values": ["paid", "pending", "cancelled"]
+    },
+    "severity": "low",
+    "health_penalty_weight": null,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "unknown_status",
+      "message_template": "Unrecognized status: '{value}'",
+      "traceability_fields": ["status"]
+    },
+    "policy_overrideable": ["enabled", "severity", "condition.valid_values"]
+  },
+  {
+    "rule_id": "amount_mismatch",
+    "description": "Detecta diferencia entre amount real y expected_amount",
+    "enabled": true,
+    "applies_to": {
+      "module": ["findings_engine"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "numeric_comparison",
+      "field_a": "amount",
+      "field_b": "expected_amount",
+      "operator": "not_equal",
+      "precondition": {
+        "field": "amount",
+        "must_not": ["null", "zero"]
+      }
+    },
+    "severity": "high",
+    "health_penalty_weight": null,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "amount_mismatch",
+      "message_template": "Amount mismatch: got {field_a}, expected {field_b}",
+      "traceability_fields": ["amount", "expected_amount"]
+    },
+    "policy_overrideable": ["enabled", "severity"]
+  },
+  {
+    "rule_id": "missing_amount",
+    "description": "Detecta filas donde el monto es nulo o cero",
+    "enabled": true,
+    "applies_to": {
+      "module": ["findings_engine"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "null_or_zero",
+      "field": "amount"
+    },
+    "severity": "medium",
+    "health_penalty_weight": null,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "missing_amount",
+      "message_template": "Amount is missing or zero",
+      "traceability_fields": ["amount"]
+    },
+    "policy_overrideable": ["enabled", "severity"]
+  },
+  {
+    "rule_id": "duplicate_order",
+    "description": "Detecta order_id duplicado dentro del mismo batch de entrada",
+    "enabled": true,
+    "applies_to": {
+      "module": ["findings_engine"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "duplicate_key",
+      "field": "order_id",
+      "scope": "batch"
+    },
+    "severity": "high",
+    "health_penalty_weight": null,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "duplicate_order",
+      "message_template": "Duplicate order detected for ID: {order_id}",
+      "traceability_fields": ["order_id"]
+    },
+    "policy_overrideable": ["enabled", "severity"]
+  },
+  {
+    "rule_id": "order_mismatch",
+    "description": "Orden presente en ambas fuentes con campos discrepantes",
+    "enabled": true,
+    "applies_to": {
+      "module": ["reconciliation"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "cross_source_field_diff",
+      "match_key": "order_id",
+      "source_a": "events",
+      "source_b": "documents",
+      "diff_fields": ["status", "total_amount"]
+    },
+    "severity": "high",
+    "health_penalty_weight": 10,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "order_mismatch",
+      "message_template": "Order data mismatch between events and documents",
+      "traceability_fields": ["order_id", "diff_reasons"]
+    },
+    "policy_overrideable": ["enabled", "severity", "health_penalty_weight"]
+  },
+  {
+    "rule_id": "order_missing_in_events",
+    "description": "Orden presente en documentos pero ausente en eventos",
+    "enabled": true,
+    "applies_to": {
+      "module": ["reconciliation"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "absence_in_source",
+      "match_key": "order_id",
+      "present_in": "documents",
+      "absent_from": "events"
+    },
+    "severity": "high",
+    "health_penalty_weight": 10,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "order_missing_in_events",
+      "message_template": "Order present in documents but missing in events",
+      "traceability_fields": ["order_id"]
+    },
+    "policy_overrideable": ["enabled", "severity", "health_penalty_weight"]
+  },
+  {
+    "rule_id": "order_missing_in_documents",
+    "description": "Orden presente en eventos pero ausente en documentos",
+    "enabled": true,
+    "applies_to": {
+      "module": ["reconciliation"],
+      "entity_type": "order"
+    },
+    "condition": {
+      "type": "absence_in_source",
+      "match_key": "order_id",
+      "present_in": "events",
+      "absent_from": "documents"
+    },
+    "severity": "medium",
+    "health_penalty_weight": 10,
+    "block_on_uncertainty": false,
+    "output": {
+      "finding_type": "order_missing_in_documents",
+      "message_template": "Order present in events but missing in documents",
+      "traceability_fields": ["order_id"]
+    },
+    "policy_overrideable": ["enabled", "severity", "health_penalty_weight"]
+  }
+]

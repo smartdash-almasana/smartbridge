@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from app.services import findings_engine
 
 
@@ -74,3 +76,108 @@ def test_duplicate_id_detection_normalizes_to_strings() -> None:
     ]
     duplicates = findings_engine._get_duplicate_ids(rows)
     assert duplicates == {"7"}
+
+
+def test_amount_mismatch_reads_message_and_severity_from_catalog(monkeypatch) -> None:
+    catalog_rules = _build_catalog_rules()
+    catalog_rules[1]["severity"] = "critical"
+    catalog_rules[1]["output"]["message_template"] = "DIFF {field_a} vs {field_b}"
+
+    monkeypatch.setattr(findings_engine, "get_effective_rules", lambda tenant_id=None: catalog_rules)
+    findings_engine._load_rule_index.cache_clear()
+    try:
+        row = {"entity_id": "E-1", "amount": 10, "expected_amount": 20}
+        finding = findings_engine._evaluate_amount_mismatch(row)
+    finally:
+        findings_engine._load_rule_index.cache_clear()
+
+    assert finding is not None
+    assert finding["severity"] == "critical"
+    assert finding["description"] == "DIFF 10 vs 20"
+    assert finding["type"] == "amount_mismatch"
+
+
+def test_disabled_rule_from_catalog_skips_detection(monkeypatch) -> None:
+    catalog_rules = _build_catalog_rules()
+    catalog_rules[2]["enabled"] = False
+
+    monkeypatch.setattr(findings_engine, "get_effective_rules", lambda tenant_id=None: catalog_rules)
+    findings_engine._load_rule_index.cache_clear()
+    try:
+        row = {"entity_id": "E-2", "amount": 0}
+        finding = findings_engine._evaluate_missing_amount(row)
+    finally:
+        findings_engine._load_rule_index.cache_clear()
+
+    assert finding is None
+
+
+def _build_catalog_rules() -> list[dict]:
+    return deepcopy(
+        [
+            {
+                "rule_id": "unknown_status",
+                "enabled": True,
+                "severity": "low",
+                "applies_to": {"module": ["findings_engine"], "entity_type": "order"},
+                "condition": {"type": "set_membership", "field": "status", "valid_values": ["paid", "pending", "cancelled"]},
+                "output": {
+                    "finding_type": "unknown_status",
+                    "message_template": "Unrecognized status: '{value}'",
+                    "traceability_fields": ["status"],
+                },
+                "policy_overrideable": ["enabled", "severity", "condition.valid_values"],
+                "description": "x",
+                "health_penalty_weight": None,
+                "block_on_uncertainty": False,
+            },
+            {
+                "rule_id": "amount_mismatch",
+                "enabled": True,
+                "severity": "high",
+                "applies_to": {"module": ["findings_engine"], "entity_type": "order"},
+                "condition": {"type": "numeric_comparison", "field_a": "amount", "field_b": "expected_amount"},
+                "output": {
+                    "finding_type": "amount_mismatch",
+                    "message_template": "Amount mismatch: got {field_a}, expected {field_b}",
+                    "traceability_fields": ["amount", "expected_amount"],
+                },
+                "policy_overrideable": ["enabled", "severity"],
+                "description": "x",
+                "health_penalty_weight": None,
+                "block_on_uncertainty": False,
+            },
+            {
+                "rule_id": "missing_amount",
+                "enabled": True,
+                "severity": "medium",
+                "applies_to": {"module": ["findings_engine"], "entity_type": "order"},
+                "condition": {"type": "null_or_zero", "field": "amount"},
+                "output": {
+                    "finding_type": "missing_amount",
+                    "message_template": "Amount is missing or zero",
+                    "traceability_fields": ["amount"],
+                },
+                "policy_overrideable": ["enabled", "severity"],
+                "description": "x",
+                "health_penalty_weight": None,
+                "block_on_uncertainty": False,
+            },
+            {
+                "rule_id": "duplicate_order",
+                "enabled": True,
+                "severity": "high",
+                "applies_to": {"module": ["findings_engine"], "entity_type": "order"},
+                "condition": {"type": "duplicate_key", "field": "order_id"},
+                "output": {
+                    "finding_type": "duplicate_order",
+                    "message_template": "Duplicate order detected for ID: {order_id}",
+                    "traceability_fields": ["order_id"],
+                },
+                "policy_overrideable": ["enabled", "severity"],
+                "description": "x",
+                "health_penalty_weight": None,
+                "block_on_uncertainty": False,
+            },
+        ]
+    )

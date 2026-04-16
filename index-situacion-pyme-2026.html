@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPyme OS 2026 | Arquitecto de Diagnóstico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Chosen Palette: Slate & Amber Professional. Backgrounds in neutral grays (slate-50), primary actions in dark slate (slate-900), alerts in amber-500/red-500, success/growth in emerald-600. Minimalistic and focused. -->
+
+    <!-- Application Structure Plan: 
+    1. Sidebar Navigation: Easy switching between analytical views and the interactive diagnostic tool.
+    2. "Contexto 2026" View: Sets the baseline (inflation end, ARCA fines, Excel obsolescence) using data visualizations to quickly anchor the user in the current reality.
+    3. "Catálogo de Patologías" View: Translates the theoretical "Catálogo de Fallas" into interactive cards, showing symptom, cause, and impact.
+    4. "Motor de Diagnóstico" View: The core interactive feature requested by the user. A simulated chat interface that acts as the "Arquitecto de Diagnóstico", prompting the user with incisive questions and displaying internal state ("Lectura Actual", "Nota Interna") to uncover invisible losses and leverage points.
+    This structure was chosen to first EDUCATE the user on the systemic risks (reports), and then DIAGNOSE their specific situation (interactive interview).
+    -->
+
+    <!-- Visualization & Content Choices: 
+    - Goal: Inform on Time Waste -> Viz: Doughnut Chart (Chart.js) -> Shows 5+ hours lost to manual data carpentry. Justification: High contrast impact of inefficiency. 
+    - Goal: Compare Delays -> Viz: Bar Chart (Chart.js) -> Compares 15 days delay in Excel vs Real-time APIs. Justification: Visualizes "Decision Blindness".
+    - Goal: Discover/Diagnose -> Presentation: Interactive Chat UI -> Simulates the requested Architect persona. Justification: Fulfills the primary prompt directive while keeping it within a unified SPA framework.
+    - Libraries: Tailwind CSS for layout, Chart.js for canvas rendering, Vanilla JS for state and chat logic.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Required Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .chat-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full shadow-xl z-20 shrink-0">
+        <div class="p-6 border-b border-slate-700">
+            <h1 class="text-xl font-bold text-white tracking-tight">SmartPyme<span class="text-amber-500">2026</span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Diagnóstico Operativo</p>
+        </div>
+        <nav class="flex-1 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <button onclick="switchTab('diagnostico')" id="btn-diagnostico"
+                        class="w-full flex items-center px-6 py-3 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors bg-slate-800 text-white border-l-4 border-amber-500">
+                        <span class="mr-3 text-lg">🎯</span> Motor de Diagnóstico
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchTab('contexto')" id="btn-contexto"
+                        class="w-full flex items-center px-6 py-3 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+                        <span class="mr-3 text-lg">📊</span> Contexto del Mercado
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchTab('patologias')" id="btn-patologias"
+                        class="w-full flex items-center px-6 py-3 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+                        <span class="mr-3 text-lg">⚠️</span> Catálogo de Fallas
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchTab('soluciones')" id="btn-soluciones"
+                        class="w-full flex items-center px-6 py-3 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+                        <span class="mr-3 text-lg">🚀</span> Palancas de Mejora
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-slate-700">
+            <div class="bg-slate-800 p-3 rounded-lg text-xs">
+                <p class="font-semibold text-white mb-1">Estado del Sistema</p>
+                <p class="text-emerald-400 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+                    Arquitecto Activo
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 h-full overflow-y-auto bg-slate-50 relative">
+
+        <!-- View 1: Motor de Diagnóstico (Default) -->
+        <section id="view-diagnostico" class="h-full flex flex-col p-6 lg:p-10 max-w-5xl mx-auto fade-in">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-slate-900">Arquitecto de Rentabilidad</h2>
+                <p class="text-slate-600 mt-2">Interrogatorio estructurado para descubrir erosión de rentabilidad y
+                    palancas ocultas. Responde con precisión.</p>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="flex-1 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                <!-- Chat History -->
+                <div id="chat-history" class="flex-1 p-6 overflow-y-auto chat-scroll space-y-6 bg-slate-50">
+                    <!-- Initial AI Prompt is injected here via JS -->
+                </div>
+
+                <!-- Chat Input -->
+                <div class="p-4 bg-white border-t border-slate-200">
+                    <form id="chat-form" class="flex items-end gap-3">
+                        <div class="flex-1 relative">
+                            <textarea id="user-input" rows="2"
+                                class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none text-sm"
+                                placeholder="Describe tu situación con datos medibles..."></textarea>
+                        </div>
+                        <button type="submit"
+                            class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-medium transition-colors h-[46px] flex items-center justify-center shrink-0">
+                            Enviar
+                        </button>
+                    </form>
+                    <p class="text-[10px] text-slate-400 mt-2 text-center">El sistema procesa respuestas buscando
+                        síntomas, riesgos y palancas de rentabilidad.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 2: Contexto 2026 -->
+        <section id="view-contexto" class="hidden p-6 lg:p-10 max-w-6xl mx-auto fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">El Paradigma 2026: Fin de la Inflación Protectora</h2>
+                <p class="text-slate-600 mt-2">Análisis de la fricción operativa en Argentina. La ineficiencia
+                    administrativa ha mutado de costo oculto a riesgo inminente de quiebra.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Data Card 1 -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-800 text-center">Distribución del Tiempo
+                        Administrativo</h3>
+                    <p class="text-xs text-slate-500 mb-4 text-center">Horas semanales dedicadas a tareas de
+                        "carpintería de datos" en Excel.</p>
+                    <div class="chart-container">
+                        <canvas id="chartTimeWaste"></canvas>
+                    </div>
+                </div>
+
+                <!-- Data Card 2 -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-lg font-semibold mb-4 text-slate-800 text-center">Latencia de Datos: Ceguera de
+                        Decisión</h3>
+                    <p class="text-xs text-slate-500 mb-4 text-center">Días de retraso en reportes: Excel vs.
+                        Integración API.</p>
+                    <div class="chart-container">
+                        <canvas id="chartLatency"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-red-50 border border-red-100 p-5 rounded-lg">
+                    <div class="text-3xl mb-2">⚖️</div>
+                    <h4 class="font-bold text-red-900 mb-1">Riesgo Fiscal (ARCA)</h4>
+                    <p class="text-sm text-red-800">Ley 27.799. Multas de hasta $440.000 por un solo día de demora en
+                        DDJJ. El control manual es insostenible.</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 p-5 rounded-lg">
+                    <div class="text-3xl mb-2">📉</div>
+                    <h4 class="font-bold text-amber-900 mb-1">Sin "Colchón" de Precios</h4>
+                    <p class="text-sm text-amber-800">Se acabó la "inflación protectora". Un error en el cálculo de
+                        costos ya no se tapa subiendo precios; destruye la rentabilidad real.</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-100 p-5 rounded-lg">
+                    <div class="text-3xl mb-2">💎</div>
+                    <h4 class="font-bold text-emerald-900 mb-1">Reputación MeLi</h4>
+                    <p class="text-sm text-emerald-800">Para sellers, el termómetro verde es el activo financiero más
+                        valioso. Su degradación por errores de datos (stock/envíos) = descapitalización.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 3: Catálogo de Patologías -->
+        <section id="view-patologias" class="hidden p-6 lg:p-10 max-w-6xl mx-auto fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Catálogo de Fallas y Patologías PyME</h2>
+                <p class="text-slate-600 mt-2">Identificación de procesos degenerativos y pérdida de eficiencia no
+                    detectada a tiempo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div
+                    class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
+                    <span class="inline-block px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded mb-3">CRÍTICO:
+                        INTEGRIDAD</span>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Corrupción Int64 (El Síntoma Excel)</h3>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Descripción:</strong> Al abrir reportes de Mercado
+                        Libre en Excel, los IDs de operación (números largos) se convierten en notación científica (ej.
+                        2.15E+12) y pierden precisión.</p>
+                    <div class="bg-slate-50 p-3 rounded text-sm text-slate-700 border border-slate-100">
+                        <strong>Impacto en Rentabilidad:</strong> Pérdida total de trazabilidad. Imposibilidad de cruzar
+                        una venta con su cobro exacto o identificar retenciones indebidas.
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-amber-500"></div>
+                    <span
+                        class="inline-block px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded mb-3">ALTO:
+                        LIQUIDEZ</span>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Ventas Fantasma (Quiebre de Stock)</h3>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Descripción:</strong> Inmovilización de capital en
+                        productos de baja rotación mientras se quiebra el stock de los productos "estrella" por falta de
+                        alertas predictivas.</p>
+                    <div class="bg-slate-50 p-3 rounded text-sm text-slate-700 border border-slate-100">
+                        <strong>Impacto en Rentabilidad:</strong> Lucro cesante inmediato. Gasto inútil en publicidad
+                        (Ads) de productos que ya no tienen inventario disponible.
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-amber-500"></div>
+                    <span
+                        class="inline-block px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded mb-3">ALTO:
+                        GESTIÓN</span>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Ansiedad Fiscal y Retenciones</h3>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Descripción:</strong> Sistemas fragmentados que no se
+                        actualizan con las normativas (AFIP/ARCA, SIRCREB). Aplicación de alícuotas desactualizadas.</p>
+                    <div class="bg-slate-50 p-3 rounded text-sm text-slate-700 border border-slate-100">
+                        <strong>Impacto en Rentabilidad:</strong> Pago excesivo de impuestos o retenciones no
+                        recuperadas, erosionando el margen neto real de cada transacción.
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div
+                    class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-orange-500"></div>
+                    <span
+                        class="inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded mb-3">GRAVE:
+                        CULTURA</span>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">La "Carpintería de Datos"</h3>
+                    <p class="text-sm text-slate-600 mb-4"><strong>Descripción:</strong> Administrativos dedican +5
+                        hs/semana a limpiar CSVs, arreglar formatos de fecha y usar VLOOKUPs en lugar de analizar
+                        resultados.</p>
+                    <div class="bg-slate-50 p-3 rounded text-sm text-slate-700 border border-slate-100">
+                        <strong>Impacto en Rentabilidad:</strong> Costo hundido en horas-hombre. Reportes de
+                        rentabilidad que llegan tarde, forzando a decidir en base a intuición o caja.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 4: Palancas de Mejora (Soluciones) -->
+        <section id="view-soluciones" class="hidden p-6 lg:p-10 max-w-6xl mx-auto fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Palancas de Mejora: El Enfoque Digest</h2>
+                <p class="text-slate-600 mt-2">Reemplazando dashboards complejos por inteligencia accionable e ingesta
+                    automatizada (Arquitectura SmartCounter).</p>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl p-8 text-white mb-8 shadow-xl">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex-1">
+                        <span class="text-amber-500 font-bold tracking-wider text-sm mb-2 block">EL FUTURO: MENOS
+                            GRÁFICOS, MÁS ACCIÓN</span>
+                        <h3 class="text-2xl font-bold mb-4">De Dashboards a "La Pregunta del Día"</h3>
+                        <p class="text-slate-300 mb-6 text-sm leading-relaxed">
+                            El dueño de PyME no tiene tiempo para interpretar tableros de Business Intelligence. La
+                            solución en 2026 procesa los datos en segundo plano (Ingesta -> Normalización -> Perfilado)
+                            y empuja un <strong>Digest proactivo</strong> directamente a WhatsApp o Telegram.
+                        </p>
+                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+                            <p class="font-mono text-sm text-emerald-400 mb-1">🤖 SmartPyme Bot dice:</p>
+                            <p class="text-white">"¿Sabías que tus 10 productos más vendidos en Mercado Libre tienen un
+                                margen real de solo el 3% porque subió el costo logístico ayer? <br><br>👉 Tienes 5
+                                clientes con deuda vencida por un total de $320.000. ¿Deseas enviar recordatorio
+                                automático?"</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3 flex flex-col gap-3">
+                        <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500">
+                            <div class="font-bold text-sm">1. Cobranzas Vencidas</div>
+                            <div class="text-xs text-slate-400 mt-1">Impacto inmediato en caja. Input: Lista de
+                                clientes/fechas.</div>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded border-l-4 border-amber-500">
+                            <div class="font-bold text-sm">2. Quiebres de Stock</div>
+                            <div class="text-xs text-slate-400 mt-1">Prevención de lucro cesante. Aviso predictivo, no
+                                reactivo.</div>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded border-l-4 border-emerald-500">
+                            <div class="font-bold text-sm">3. Conciliación Automática</div>
+                            <div class="text-xs text-slate-400 mt-1">Especial para Mercado Libre. Match exacto de venta
+                                vs. cobro real.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Arquitectura de Ingesta (Evitando la Fricción PDF/Excel)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-5 border border-slate-200 rounded-lg bg-white">
+                    <div class="text-xl mb-2">📥</div>
+                    <h4 class="font-bold text-slate-700">Módulo Tabular</h4>
+                    <p class="text-xs text-slate-500 mt-1">Carga automática de XLS/CSV. Detecta hojas útiles, fila
+                        header y mapea aliases automáticamente.</p>
+                </div>
+                <div class="p-5 border border-slate-200 rounded-lg bg-white">
+                    <div class="text-xl mb-2">📄</div>
+                    <h4 class="font-bold text-slate-700">Módulo Documental</h4>
+                    <p class="text-xs text-slate-500 mt-1">PDF Digital. Extracción de texto por página, detección de
+                        tablas y clasificación documental sin OCR.</p>
+                </div>
+                <div class="p-5 border border-slate-200 rounded-lg bg-white">
+                    <div class="text-xl mb-2">👁️</div>
+                    <h4 class="font-bold text-slate-700">Módulo OCR Asistido</h4>
+                    <p class="text-xs text-slate-500 mt-1">Para escaneos. Derivación de confianza baja a "Factoría de
+                        Trabajo" (Human-in-the-loop) para curaduría.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // === Core Navigation Logic ===
+        function switchTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            // Reset button styles
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white', 'border-amber-500');
+                btn.classList.add('border-transparent');
+            });
+
+            // Show selected section
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            // Update selected button
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.add('bg-slate-800', 'text-white', 'border-amber-500');
+            activeBtn.classList.remove('border-transparent');
+
+            // Render charts if context tab is opened for the first time
+            if (tabId === 'contexto' && !window.chartsRendered) {
+                renderCharts();
+                window.chartsRendered = true;
+            }
+        }
+
+        // === Charts Logic (Chart.js) ===
+        function renderCharts() {
+            Chart.defaults.font.family = 'Inter';
+            Chart.defaults.color = '#64748b';
+
+            // Chart 1: Time Waste (Doughnut)
+            const ctxTime = document.getElementById('chartTimeWaste').getContext('2d');
+            new Chart(ctxTime, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Limpieza de Datos (CSVs, etc)', 'Búsqueda de Errores', 'Carga Manual AFIP', 'Análisis Real/Estrategia'],
+                    datasets: [{
+                        data: [40, 25, 25, 10],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: function (context) { return context.label + ': ' + context.raw + '%'; } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Chart 2: Latency (Bar)
+            const ctxLatency = document.getElementById('chartLatency').getContext('2d');
+            new Chart(ctxLatency, {
+                type: 'bar',
+                data: {
+                    labels: ['Excel Tradicional', 'Conciliación Manual', 'SmartCounter/API'],
+                    datasets: [{
+                        label: 'Días de Retraso de Información',
+                        data: [15, 7, 0.5],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // === Diagnostic Engine Logic ===
+
+        // Mock sequence based on the user's prompt request
+        const diagnosticSequence = [
+            {
+                // INIT
+                lectura: {
+                    contexto: "Inicio de interrogatorio.",
+                    riesgo: "Desconocido.",
+                    oportunidad: "Desconocido.",
+                    impacto: "Desconocido.",
+                    evidencia: "Estructura base del modelo de ingresos y canales.",
+                    categoria: "N/A."
+                },
+                pregunta: "¿Exactamente qué vendés y qué porcentaje de tu facturación total representa cada canal de venta (local físico, Mercado Libre, tienda propia online, mayorista/preventa)?",
+                nota: {
+                    porque: "Es el anclaje fundamental para dimensionar la superficie de fricción. La mezcla de canales determina la complejidad impositiva (percepciones) y el riesgo de quiebre de stock.",
+                    busca: "Busca detectar si el dueño tiene el control real de su volumen vs canales."
+                }
+            },
+            {
+                // STEP 1
+                lectura: {
+                    contexto: "Operación multicanal detectada. Posible dependencia de canales de alto costo de adquisición.",
+                    riesgo: "Deterioro de margen por comisiones no calculadas o costos logísticos invisibles en canales digitales.",
+                    oportunidad: "Redirección de volumen hacia canales directos; ajuste de pricing por canal.",
+                    impacto: "5% al 12% sobre facturación bruta de canales digitales.",
+                    evidencia: "Desglose de costos fijos y variables asociados específicamente a las ventas online.",
+                    categoria: "Ventas que empobrecen / Comisiones no absorbidas."
+                },
+                pregunta: "Si tomamos el canal que más factura (ej. Mercado Libre o Mayorista), ¿cuál es el costo exacto de adquisición, logística y retenciones impositivas por venta, y qué margen neto final te deja en el bolsillo?",
+                nota: {
+                    porque: "Obliga al usuario a separar volumen de facturación de rentabilidad real.",
+                    busca: "Confirmar si hay 'falsa rentabilidad'. Muchas PyMEs venden mucho en MeLi pero los costos ocultos dejan ganancia cercana a cero."
+                }
+            },
+            {
+                // STEP 2
+                lectura: {
+                    contexto: "Dificultad para precisar el margen neto por transacción. Posible uso de 'Excel de emergencia' para cálculos.",
+                    riesgo: "Toma de decisiones de inventario y publicidad sobre productos que destruyen margen. Pérdida de capital de trabajo.",
+                    oportunidad: "Depuración de catálogo. Pausar campañas de productos 'estrella' no rentables.",
+                    impacto: "Liberación de hasta 20% del stock inmovilizado.",
+                    evidencia: "Herramientas utilizadas para conciliar ventas vs. liquidaciones (¿Excel manual o API?).",
+                    categoria: "Ceguera de decisión / Obsolescencia técnica."
+                },
+                pregunta: "¿Cómo te asegurás de que lo que el canal o cliente dice que te pagó coincide exactamente con la mercadería entregada, y cuántas horas a la semana dedicás a cruzar esa información?",
+                nota: {
+                    porque: "Apunta al 'Dolor de la Carpintería de Datos' y la conciliación.",
+                    busca: "Exponer el costo hundido en tareas manuales y la probabilidad de errores/fugas por conciliación defectuosa (ej. corrupción de Int64)."
+                }
+            },
+            {
+                // STEP 3
+                lectura: {
+                    contexto: "Confirmación de fricción operativa. Tareas manuales y pérdida de trazabilidad en conciliación.",
+                    riesgo: "Fuga de capital por retenciones mal aplicadas, cobros no realizados y quiebres de stock no anticipados.",
+                    oportunidad: "Automatización de la ingesta de datos y alertas tempranas ('Pregunta del Día').",
+                    impacto: "Ahorro de +20 horas mensuales; recuperación de 2-5% de facturación perdida en conciliación.",
+                    evidencia: "Disposición a delegar la estructuración de datos. Claridad sobre clientes deudores.",
+                    categoria: "Bloqueo de Mejora / Administración fragmentada."
+                },
+                pregunta: "Si tuvieras un sistema que automáticamente te cruza ventas, cobros y stock, ¿cuál es el primer dato crítico que le pedirías cada mañana por WhatsApp para evitar perder plata hoy?",
+                nota: {
+                    porque: "Fuerza al usuario a identificar su dolor más agudo (Job to be done principal).",
+                    busca: "Definir si su prioridad inmediata es Cobranzas Vencidas, Quiebre de Stock o Conciliación (Mercado Libre)."
+                }
+            },
+            {
+                // FINAL
+                lectura: {
+                    contexto: "Diagnóstico inicial completado. Dolor principal identificado.",
+                    riesgo: "Inacción por parálisis ante la complejidad técnica de la migración.",
+                    oportunidad: "Implementación de módulo focalizado (Ej: Bot de Cobranzas) sin cambiar todo el ERP.",
+                    impacto: "Retorno de inversión (ROI) inmediato y medible en la primera semana de uso.",
+                    evidencia: "Volumen exacto de la cartera en mora o SKUs críticos.",
+                    categoria: "Palanca de Automatización / Onboarding Rápido."
+                },
+                pregunta: "Diagnóstico concluido. Hemos detectado hemorragia de rentabilidad por conciliación manual y ceguera de margen. Te sugiero revisar el 'Catálogo de Fallas' en el menú lateral para ver el impacto documentado de estos problemas en PyMEs Argentinas en 2026.",
+                nota: {
+                    porque: "Cierre del circuito interactivo.",
+                    busca: "Redirigir la atención del usuario a la capa de conocimiento estructurado (SPA views) para consolidar el aprendizaje."
+                }
+            }
+        ];
+
+        let currentStep = 0;
+        const chatHistory = document.getElementById('chat-history');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+
+        // Initial render
+        renderBotResponse(diagnosticSequence[0]);
+
+        chatForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // Render User Input
+            renderUserMessage(text);
+            userInput.value = '';
+
+            // Advance Step
+            currentStep++;
+            if (currentStep < diagnosticSequence.length) {
+                // Simulate processing delay
+                const typingId = renderTypingIndicator();
+                setTimeout(() => {
+                    removeElement(typingId);
+                    renderBotResponse(diagnosticSequence[currentStep]);
+                }, 1500);
+            } else {
+                const typingId = renderTypingIndicator();
+                setTimeout(() => {
+                    removeElement(typingId);
+                    renderUserMessage("El interrogatorio ha finalizado. Consulta las Palancas de Mejora.", true);
+                }, 1000);
+            }
+        });
+
+        // Allow Enter to submit (Shift+Enter for new line)
+        userInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        function renderUserMessage(text, isSystem = false) {
+            const div = document.createElement('div');
+            div.className = `flex justify-end fade-in`;
+            const bgClass = isSystem ? 'bg-slate-200 text-slate-600 italic' : 'bg-slate-800 text-white';
+
+            div.innerHTML = `
+                <div class="${bgClass} rounded-2xl rounded-tr-sm px-5 py-3 max-w-[80%] shadow-sm text-sm whitespace-pre-wrap">
+                    ${escapeHTML(text)}
+                </div>
+            `;
+            chatHistory.appendChild(div);
+            scrollToBottom();
+        }
+
+        function renderBotResponse(data) {
+            const div = document.createElement('div');
+            div.className = `flex flex-col gap-3 max-w-[90%] fade-in`;
+
+            let html = `
+                <!-- LECTURA ACTUAL -->
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-blue-500">
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 tracking-wider">## LECTURA ACTUAL</h4>
+                    <ul class="text-xs text-slate-600 space-y-1 font-mono">
+                        <li><span class="text-slate-800 font-semibold">- contexto_detectado:</span> ${data.lectura.contexto}</li>
+                        <li><span class="text-red-600 font-semibold">- riesgo_de_rentabilidad:</span> ${data.lectura.riesgo}</li>
+                        <li><span class="text-emerald-600 font-semibold">- oportunidad_de_mejora:</span> ${data.lectura.oportunidad}</li>
+                        <li><span class="text-slate-800 font-semibold">- impacto_estimado:</span> ${data.lectura.impacto}</li>
+                        <li><span class="text-slate-800 font-semibold">- evidencia_faltante:</span> ${data.lectura.evidencia}</li>
+                        <li><span class="text-amber-600 font-semibold">- categoria_catalogo:</span> ${data.lectura.categoria}</li>
+                    </ul>
+                </div>
+
+                <!-- SIGUIENTE PREGUNTA -->
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm">
+                    <h4 class="text-xs font-bold text-amber-600 mb-1 tracking-wider">## SIGUIENTE_PREGUNTA</h4>
+                    <p class="text-slate-800 font-medium text-sm leading-relaxed">${data.pregunta}</p>
+                </div>
+
+                <!-- NOTA INTERNA -->
+                <div class="bg-slate-100 rounded p-3 ml-4 opacity-80 hover:opacity-100 transition-opacity">
+                    <h4 class="text-[10px] font-bold text-slate-500 mb-1 tracking-wider uppercase">## NOTA INTERNA</h4>
+                    <ul class="text-[11px] text-slate-500 space-y-1">
+                        <li><strong>- por_que_esta_pregunta_ahora:</strong> ${data.nota.porque}</li>
+                        <li><strong>- que_busca_confirmar:</strong> ${data.nota.busca}</li>
+                    </ul>
+                </div>
+            `;
+
+            div.innerHTML = html;
+            chatHistory.appendChild(div);
+            scrollToBottom();
+        }
+
+        function renderTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = `flex max-w-[80%] fade-in`;
+            div.innerHTML = `
+                <div class="bg-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1">
+                    <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                    <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                </div>
+            `;
+            chatHistory.appendChild(div);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeElement(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+
+</html>

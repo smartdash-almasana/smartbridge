@@ -1,0 +1,143 @@
+{
+  "$schema": "catalog/rules/v2",
+  "version": "2.0",
+  "status": "approved — pending motor integration",
+
+  "severity_enum": ["low", "medium", "high", "critical"],
+
+  "condition_types": [
+    "set_membership",
+    "numeric_comparison",
+    "null_or_zero",
+    "duplicate_key",
+    "cross_source_field_diff",
+    "absence_in_source"
+  ],
+
+  "rule_schema": {
+    "rule_id": "string — stable identifier, matches output.finding_type convention",
+    "description": "string",
+    "enabled": "bool — explicit in every base rule; overrideable per tenant",
+    "applies_to": {
+      "module": "array<string> — one of: findings_engine | reconciliation",
+      "entity_type": "string — e.g. 'order'"
+    },
+    "condition": {
+      "type": "string — one of condition_types",
+      "_note": "Additional fields depend on condition.type — see condition_type_schemas below"
+    },
+    "severity": "string — one of severity_enum",
+    "health_penalty_weight": "number | null — null for findings_engine rules; integer for reconciliation rules",
+    "block_on_uncertainty": "bool — NOT overrideable by tenant",
+    "output": {
+      "finding_type": "string — what the motor emits as finding_type",
+      "message_template": "string — uses {field} placeholders from condition fields",
+      "traceability_fields": "array<string> — fields that must appear in traceability.raw_values"
+    },
+    "policy_overrideable": "array<string> — explicit list of fields tenants may override"
+  },
+
+  "tenant_override_schema": {
+    "tenant_id": "string",
+    "rule_id": "string — must reference an existing rule_id in rules.v2.json",
+    "overrides": {
+      "_note": "Only fields listed in the base rule's policy_overrideable array are valid here",
+      "enabled": "bool (optional)",
+      "severity": "string — one of severity_enum (optional)",
+      "health_penalty_weight": "number (optional — only for reconciliation rules)",
+      "condition.valid_values": "array<string> (optional — only for set_membership rules)"
+    }
+  },
+
+  "condition_type_schemas": {
+    "set_membership": {
+      "field": "string",
+      "transform": "string | null — e.g. 'strip_lower'",
+      "valid_values": "array<string>"
+    },
+    "numeric_comparison": {
+      "field_a": "string",
+      "field_b": "string",
+      "operator": "string — e.g. 'not_equal'",
+      "precondition": {
+        "field": "string",
+        "must_not": "array<string> — e.g. ['null', 'zero']"
+      }
+    },
+    "null_or_zero": {
+      "field": "string"
+    },
+    "duplicate_key": {
+      "field": "string",
+      "scope": "string — 'batch'"
+    },
+    "cross_source_field_diff": {
+      "match_key": "string",
+      "source_a": "string",
+      "source_b": "string",
+      "diff_fields": "array<string>"
+    },
+    "absence_in_source": {
+      "match_key": "string",
+      "present_in": "string",
+      "absent_from": "string"
+    }
+  },
+
+  "motor_output": {
+    "_description": "Contrato canónico que el motor debe producir por cada regla disparada",
+    "_status": "not yet implemented — defines the target shape for the future evaluator",
+    "finding": {
+      "finding_id": "string — determinístico: 'fnd_{rule_id}_{entity_ref}'",
+      "rule_id": "string — referencia al catálogo para trazabilidad",
+      "finding_type": "string — igual a output.finding_type de la regla",
+      "severity": "string — uno de severity_enum con override aplicado si existe",
+      "entity_ref": "string — 'order_{order_id}' o equivalente por entity_type",
+      "message": "string — message_template renderizado con valores reales",
+      "module": "string — módulo que disparó la regla",
+      "traceability": {
+        "rule_source": "catalog",
+        "catalog_version": "string",
+        "fields_evaluated": "array<string>",
+        "raw_values": "object"
+      }
+    },
+    "invariants": {
+      "finding_id_must_be_deterministic": true,
+      "severity_must_match_enum": true,
+      "entity_ref_must_be_present": true,
+      "rule_id_must_reference_catalog": true,
+      "block_on_uncertainty_not_overrideable": true
+    },
+    "compatibility_map": {
+      "findings_engine_current_output": {
+        "type": "→ finding_type",
+        "severity": "→ severity",
+        "description": "→ message",
+        "entity_id": "→ entity_ref",
+        "metadata": "→ traceability.raw_values"
+      },
+      "reconciliation_current_output": {
+        "finding_id": "→ finding_id",
+        "type": "→ finding_type",
+        "severity": "→ severity",
+        "message": "→ message",
+        "entity_ref": "→ entity_ref",
+        "context": "→ traceability.fields_evaluated"
+      }
+    }
+  },
+
+  "excluded_from_scope": {
+    "layer": "guia_copilotaje",
+    "reason": "Requiere modelo de comunicación separado — no es estructura de datos de evaluación",
+    "excluded_fields": [
+      "action_template",
+      "message_narrativo_usuario",
+      "escalation_policy",
+      "canal_notificacion",
+      "copilot_hint",
+      "inbox_priority"
+    ]
+  }
+}
