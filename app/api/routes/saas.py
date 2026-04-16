@@ -188,81 +188,26 @@ async def saas_upload(
         if single_mode:
             print("📂 Processing single file upload")
             assert file is not None
-            filename = file.filename or "upload.csv"
-            file_bytes = await file.read()
+            request_dir = _create_request_dir(ingestion_id)
+            single_path = request_dir / (file.filename or "upload.csv")
+            _save_upload(file, single_path)
 
-            print("filename:", filename)
-            print("file size:", len(file_bytes))
-
-            try:
-                if filename.lower().endswith(".xlsx"):
-                    df = pd.read_excel(BytesIO(file_bytes))
-                    print("✅ Excel parsed OK")
-                else:
-                    df = pd.read_csv(BytesIO(file_bytes), sep=None, engine="python")
-                    print("✅ CSV parsed OK")
-            except Exception as e:
-                print("❌ Parse error:", str(e))
-                return JSONResponse(
-                    {"error": f"Parse error: {str(e)}"},
-                    status_code=400,
-                )
-
-            # Normalise column names to lowercase stripped strings
-            df.columns = [c.strip().lower() for c in df.columns]
-            print("columns detected:", df.columns.tolist())
-
-            # Fuzzy substring match — first column whose name contains any keyword wins
-            def find_col(keys: list[str]) -> str | None:
-                for col in df.columns:
-                    for k in keys:
-                        if k in col.split("_"):
-                            return col
-                return None
-
-            order_col  = find_col(["order_id", "order", "id", "referencia", "pedido", "orden"])
-            amount_col = find_col(["amount", "importe", "monto", "total", "valor"])
-            status_col = find_col(["status", "estado", "payment"])
-
-            print("column_map resolved:", {
-                "order_id": order_col,
-                "amount": amount_col,
-                "status": status_col,
-            })
-
-            # order_id and amount are the minimum required
-            if not order_col or not amount_col:
-                print("❌ cannot map required columns")
-                return JSONResponse(
-                    {"error": f"Cannot map required columns. "
-                               f"Detected columns: {df.columns.tolist()}"},
-                    status_code=400,
-                )
-
-            # Rename to canonical names
-            rename: dict[str, str] = {
-                order_col: "order_id",
-                amount_col: "amount",
-            }
-            if status_col and status_col not in rename:
-                rename[status_col] = "status"
-
-            df = df.rename(columns=rename)
-
-            # Inject status if not present in the file
-            if "status" not in df.columns:
-                df["status"] = "unknown"
-
-
-            rows = df.to_dict(orient="records")
-            total_raw_rows = len(rows)
-            valid_rows = total_raw_rows
+            ingestion_result = run_ingestion_pipeline(single_path)
+            ventas = ingestion_result["ventas"]
+            facturas = ingestion_result["facturas"]
+            valid_rows = ingestion_result["valid_rows"]
+            total_raw_rows = ingestion_result["total_rows"]
             doc_type = "upload"
-            v_meta: dict[str, Any] = {}
-            f_meta: dict[str, Any] = {}
-            print(f"✅ {total_raw_rows} rows loaded, calling build_findings")
-            generated_signals = build_findings(rows)
-            print(f"✅ build_findings returned {len(generated_signals)} signals")
+            single_meta = persist_ingestion(
+                ingestion_id,
+                single_path,
+                ventas + facturas,
+                {},
+                "upload",
+            ) or {}
+            v_meta: dict[str, Any] = single_meta
+            f_meta: dict[str, Any] = single_meta
+            generated_signals = _build_signals(ventas, facturas)
 
         else:
             assert ventas_file is not None and facturas_file is not None
