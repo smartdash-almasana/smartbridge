@@ -1,11 +1,18 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SmartBridge — Detectá errores en tus datos</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -57,7 +64,6 @@
       margin-bottom: 28px;
     }
 
-    /* ── Ejemplo ── */
     .example {
       background: #111118;
       border: 1px solid #252530;
@@ -65,6 +71,7 @@
       padding: 16px 18px;
       margin-bottom: 28px;
     }
+
     .example-label {
       font-size: 11px;
       font-weight: 600;
@@ -73,7 +80,13 @@
       color: #555570;
       margin-bottom: 10px;
     }
-    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+
     th {
       text-align: left;
       color: #6c6c88;
@@ -81,10 +94,17 @@
       padding: 4px 8px;
       border-bottom: 1px solid #252530;
     }
-    td { padding: 5px 8px; color: #cccce0; font-variant-numeric: tabular-nums; }
-    tr:last-child td { border: none; }
 
-    /* ── Upload zone ── */
+    td {
+      padding: 5px 8px;
+      color: #cccce0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tr:last-child td {
+      border: none;
+    }
+
     .upload-zone {
       display: block;
       width: 100%;
@@ -96,8 +116,16 @@
       margin-bottom: 16px;
       transition: border-color .2s, background .2s;
     }
-    .upload-zone:hover { border-color: #6366f1; background: #1a1a28; }
-    .upload-zone.has-file { border-color: #22c55e; border-style: solid; }
+
+    .upload-zone:hover {
+      border-color: #6366f1;
+      background: #1a1a28;
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      border-style: solid;
+    }
 
     .upload-zone input[type="file"] {
       position: absolute;
@@ -105,12 +133,31 @@
       width: 0;
       height: 0;
     }
-    .upload-icon { font-size: 22px; margin-bottom: 6px; }
-    .upload-title { font-size: 13px; font-weight: 600; color: #c0c0d8; margin-bottom: 2px; }
-    .upload-hint { font-size: 11px; color: #555570; }
-    .upload-name { font-size: 11px; color: #22c55e; margin-top: 4px; word-break: break-all; }
 
-    /* ── Error ── */
+    .upload-icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .upload-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #c0c0d8;
+      margin-bottom: 2px;
+    }
+
+    .upload-hint {
+      font-size: 11px;
+      color: #555570;
+    }
+
+    .upload-name {
+      font-size: 11px;
+      color: #22c55e;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
     .error-box {
       background: #1f1115;
       border: 1px solid #7f1d1d;
@@ -121,7 +168,6 @@
       margin-bottom: 20px;
     }
 
-    /* ── Button ── */
     button[type="submit"] {
       width: 100%;
       padding: 13px;
@@ -134,10 +180,17 @@
       cursor: pointer;
       transition: background .15s, transform .1s;
     }
-    button[type="submit"]:hover { background: #4f52d8; }
-    button[type="submit"]:active { transform: scale(.98); }
+
+    button[type="submit"]:hover {
+      background: #4f52d8;
+    }
+
+    button[type="submit"]:active {
+      transform: scale(.98);
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
     <div class="badge">SmartBridge · MVP</div>
@@ -149,23 +202,36 @@
       <div class="example-label">Ejemplo: así puede venir tu archivo</div>
       <table>
         <thead>
-          <tr><th>Pedido</th><th>Importe</th></tr>
+          <tr>
+            <th>Pedido</th>
+            <th>Importe</th>
+          </tr>
         </thead>
         <tbody>
-          <tr><td>A1</td><td>$&nbsp;1.000</td></tr>
-          <tr><td>A2</td><td>$&nbsp;2.500,50</td></tr>
-          <tr><td>A3</td><td>(350)</td></tr>
+          <tr>
+            <td>A1</td>
+            <td>$&nbsp;1.000</td>
+          </tr>
+          <tr>
+            <td>A2</td>
+            <td>$&nbsp;2.500,50</td>
+          </tr>
+          <tr>
+            <td>A3</td>
+            <td>(350)</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
     {% if error %}
-      <div class="error-box">⚠ {{ error }}</div>
+    <div class="error-box">⚠ {{ error }}</div>
     {% endif %}
 
     <form action="/saas/upload" method="post" enctype="multipart/form-data" id="saas-form">
       <label class="upload-zone" id="zone-main" for="file">
-        <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" required onchange="markFile('zone-main','name-main',this)" />
+        <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" required
+          onchange="markFile('zone-main','name-main',this)" />
         <div class="upload-icon">📄</div>
         <div class="upload-title">Subí tu archivo</div>
         <div class="upload-hint">CSV o Excel · ventas, facturas, lo que tengas</div>
@@ -174,6 +240,8 @@
 
       <button type="submit" style="margin-top: 16px;">Analizar archivo</button>
     </form>
+
+    <div id="modules-catalog" style="margin-top: 32px; font-size: 13px; color: #8b8ba8;"></div>
   </div>
 
   <script>
@@ -188,6 +256,26 @@
         nameEl.textContent = '';
       }
     }
+
+    fetch('/saas/modules')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('modules-catalog');
+        if (data.loaded_modules && data.loaded_modules.length > 0) {
+          const list = data.loaded_modules.map(m => {
+            const moduleName =
+              m.name ||
+              (m.contract_metadata && m.contract_metadata.module_name) ||
+              m.module_id ||
+              'Módulo sin nombre';
+            const secondaryText = m.module_id ? `ID: ${m.module_id}` : '';
+            return `<li><strong>${moduleName}</strong>${secondaryText ? ` — ${secondaryText}` : ''}</li>`;
+          }).join('');
+          container.innerHTML = `<div class="example-label" style="margin-bottom:8px">Módulos activos:</div><ul style="padding-left: 18px; line-height: 1.6; color: #cccce0">${list}</ul>`;
+        }
+      })
+      .catch(err => console.error('Error fetching modules:', err));
   </script>
 </body>
+
 </html>

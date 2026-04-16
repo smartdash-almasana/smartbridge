@@ -18,6 +18,7 @@ from app.services.ingestion_persistence import persist_ingestion, update_global_
 from app.services.scoring import compute_priority
 from app.services.ingestion_loader import run_ingestion_pipeline
 from app.services.orchestrator.run_pipeline import run_pipeline as run_orchestrator_pipeline
+from app.modules.registry_loader import load_modules_registry
 
 
 router = APIRouter(prefix="/saas", tags=["saas"])
@@ -387,3 +388,17 @@ def get_ingestion(ingestion_id: str) -> JSONResponse:
         return JSONResponse(result)
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.get("/modules")
+def read_modules_registry() -> JSONResponse:
+    try:
+        registry_path = "docs/product/modules/modules_registry_v1.json"
+        result = load_modules_registry(registry_path)
+        
+        status_code = 500 if result.get("validation_errors") else 200
+        return JSONResponse(result, status_code=status_code)
+        
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
