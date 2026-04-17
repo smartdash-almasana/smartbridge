@@ -5,6 +5,8 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 from app.catalog import get_effective_rules
+from app.modules.hermes_retail_hot.rules.replacement_lag import evaluate_replacement_lag
+from app.modules.hermes_retail_hot.rules.zombie_capital import evaluate_zombie_capital
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,13 +29,26 @@ def _create_finding(
     entity_id: Optional[str],
     metadata: Dict[str, Any],
 ) -> Dict[str, Any]:
-    return {
+    finding = {
         "type": type_,
         "severity": severity,
         "description": description,
         "entity_id": entity_id,
         "metadata": metadata,
     }
+    threshold_value = metadata.get("threshold_value")
+    exposure_value = metadata.get("exposure_value")
+    recommended_action = metadata.get("recommended_action")
+    confidence_score = metadata.get("confidence_score")
+    if threshold_value is not None:
+        finding["threshold_value"] = threshold_value
+    if exposure_value is not None:
+        finding["exposure_value"] = exposure_value
+    if recommended_action is not None:
+        finding["recommended_action"] = recommended_action
+    if confidence_score is not None:
+        finding["confidence_score"] = confidence_score
+    return finding
 
 
 @lru_cache(maxsize=1)
@@ -208,6 +223,29 @@ def build_findings(rows: List[Dict]) -> List[Dict]:
     for row in rows:
         if not isinstance(row, dict):
             continue
+
+        hermes_finding = evaluate_replacement_lag(row)
+        if hermes_finding is not None:
+            findings.append(
+                _create_finding(
+                    hermes_finding["type"],
+                    hermes_finding["severity"],
+                    hermes_finding["description"],
+                    row.get("entity_id"),
+                    hermes_finding["metadata"],
+                )
+            )
+        hermes_finding = evaluate_zombie_capital(row)
+        if hermes_finding is not None:
+            findings.append(
+                _create_finding(
+                    hermes_finding["type"],
+                    hermes_finding["severity"],
+                    hermes_finding["description"],
+                    row.get("entity_id"),
+                    hermes_finding["metadata"],
+                )
+            )
 
         if f := _evaluate_amount_mismatch(row):
             findings.append(f)

@@ -443,14 +443,17 @@ def extract_signals(df: pd.DataFrame) -> Dict[str, Any]:
     ventas = _format_rows(df.loc[ventas_idx], ["order_id", "amount"])
     facturas = _format_rows(df.loc[valid_idx], ["order_id", "amount"])
 
-    doc_type = "ventas" if len(ventas) > 0 else "facturas"
+    doc_type = _infer_canonical_document_type(df)
+    valid_rows = int(valid_mask.sum())
+    total_rows = int(len(df))
 
     return {
         "ventas": ventas,
         "facturas": facturas,
-        "valid_rows": int(valid_mask.sum()),
-        "total_rows": int(len(df)),
+        "valid_rows": valid_rows,
+        "total_rows": total_rows,
         "document_type": doc_type,
+        "confidence_score": _compute_confidence_score(valid_rows, total_rows, doc_type),
     }
 
 def _format_rows(subset: pd.DataFrame, cols: List[str]) -> List[Dict[str, Any]]:
@@ -488,7 +491,69 @@ def _format_rows(subset: pd.DataFrame, cols: List[str]) -> List[Dict[str, Any]]:
     return result
 
 def _empty_contract() -> Dict[str, Any]:
-    return {"ventas": [], "facturas": [], "valid_rows": 0, "total_rows": 0, "document_type": "facturas"}
+    return {
+        "ventas": [],
+        "facturas": [],
+        "valid_rows": 0,
+        "total_rows": 0,
+        "document_type": "sales",
+        "confidence_score": 0.0,
+    }
+
+
+def _infer_canonical_document_type(df: pd.DataFrame) -> str:
+    normalized_columns = [str(col).strip().lower() for col in df.columns]
+    joined = " ".join(normalized_columns)
+
+    purchases_terms = (
+        "supplier",
+        "vendor",
+        "buy cost",
+        "purchase price",
+        "purchase invoice",
+        "proveedor",
+        "compra",
+        "costo",
+    )
+    sales_terms = (
+        "order",
+        "sale amount",
+        "sold quantity",
+        "ticket",
+        "sales invoice",
+        "venta",
+        "pedido",
+        "factura",
+    )
+    inventory_terms = (
+        "stock",
+        "on hand",
+        "existence",
+        "current quantity",
+        "inventario",
+        "existencia",
+    )
+
+    scores = {
+        "purchases": sum(1 for term in purchases_terms if term in joined),
+        "sales": sum(1 for term in sales_terms if term in joined),
+        "inventory": sum(1 for term in inventory_terms if term in joined),
+    }
+    if scores["inventory"] > max(scores["purchases"], scores["sales"]):
+        return "inventory"
+    if scores["purchases"] > scores["sales"]:
+        return "purchases"
+    return "sales"
+
+
+def _compute_confidence_score(valid_rows: int, total_rows: int, document_type: str | None) -> float:
+    if total_rows <= 0 or valid_rows <= 0:
+        return 0.0
+    ratio = max(0.0, min(1.0, float(valid_rows) / float(total_rows)))
+    canonical = {"purchases", "sales", "inventory"}
+    if not document_type or str(document_type).strip().lower() not in canonical:
+        ratio *= 0.5
+    return max(0.0, min(1.0, round(ratio, 4)))
 
 
 # =============================================================================
@@ -505,7 +570,14 @@ def run_ingestion_pipeline(file_path: Path) -> Dict[str, Any]:
     Single entry point. Orchestrates ingestion layers.
     NEVER raises exception outward. ALWAYS returns consistent contract.
     """
-    _fallback = {"ventas": [], "facturas": [], "valid_rows": 0, "total_rows": 0, "document_type": "facturas"}
+    _fallback = {
+        "ventas": [],
+        "facturas": [],
+        "valid_rows": 0,
+        "total_rows": 0,
+        "document_type": "sales",
+        "confidence_score": 0.0,
+    }
     try:
         df = load_file(file_path)
         if df.empty:

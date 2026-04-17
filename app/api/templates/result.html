@@ -199,6 +199,31 @@
       <div class="no-issues">✓ No se detectaron inconsistencias.</div>
     {% endif %}
 
+    {% if hermes_findings and hermes_findings | length > 0 %}
+      <h2>Hallazgos Hermes</h2>
+      <ul class="signal-list">
+        {% for finding in hermes_findings %}
+          <li class="signal-item">
+            <span class="sig-icon">⚠</span>
+            <div>
+              <div class="sig-code">{{ finding.type }}</div>
+              <div class="sig-ref">Severidad: {{ finding.severity }}</div>
+              <div class="sig-ref">{{ finding.description }}</div>
+              {% if finding.exposure_value is defined and finding.exposure_value is not none %}
+                <div class="sig-ref">Exposure: {{ finding.exposure_value }}</div>
+              {% endif %}
+              {% if finding.recommended_action is defined and finding.recommended_action is not none %}
+                <div class="sig-ref">Recommended action: {{ finding.recommended_action }}</div>
+              {% endif %}
+              {% if finding.confidence_score is defined and finding.confidence_score is not none %}
+                <div class="sig-ref">Confidence: {{ finding.confidence_score }}</div>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
     <!-- Acciones sugeridas -->
     {% if suggested_actions and suggested_actions | length > 0 %}
       <h2>Qué hacer</h2>

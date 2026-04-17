@@ -18,6 +18,26 @@ def findings_to_signals(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "difference": f["difference"],
                 "source_a": f["source_a"],
                 "source_b": f["source_b"],
+                **(
+                    {"threshold_value": f["threshold_value"]}
+                    if f.get("threshold_value") is not None
+                    else {}
+                ),
+                **(
+                    {"exposure_value": f["exposure_value"]}
+                    if f.get("exposure_value") is not None
+                    else {}
+                ),
+                **(
+                    {"recommended_action": f["recommended_action"]}
+                    if f.get("recommended_action") is not None
+                    else {}
+                ),
+                **(
+                    {"confidence_score": f["confidence_score"]}
+                    if f.get("confidence_score") is not None
+                    else {}
+                ),
             },
         }
         for f in findings

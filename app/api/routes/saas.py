@@ -3,22 +3,20 @@ from __future__ import annotations
 import os
 import shutil
 import uuid
-from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
 from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app.core.time_provider import get_current_timestamp
-from app.services.findings_engine import build_findings
-from app.services.ingestion_persistence import persist_ingestion, update_global_index
-from app.services.scoring import compute_priority
-from app.services.ingestion_loader import run_ingestion_pipeline
-from app.services.orchestrator.run_pipeline import run_pipeline as run_orchestrator_pipeline
 from app.modules.registry_loader import load_modules_registry
+from app.services.findings_engine import build_findings
+from app.services.ingestion_loader import run_ingestion_pipeline
+from app.services.ingestion_persistence import persist_ingestion, update_global_index
+from app.services.orchestrator.run_pipeline import run_pipeline as run_orchestrator_pipeline
+from app.services.scoring import compute_priority
 
 
 router = APIRouter(prefix="/saas", tags=["saas"])
@@ -29,12 +27,16 @@ HUMAN_SIGNALS: dict[str, str] = {
     "order_missing_in_documents": "Faltan datos para algunas operaciones",
     "duplicate_order": "Hay operaciones registradas más de una vez",
     "order_mismatch": "Hay operaciones que no coinciden entre los archivos",
+    "replacement_lag": "Hay productos con precio por debajo del umbral de reposición",
+    "zombie_capital": "Hay stock inmovilizado que está secuestrando capital",
 }
 
 SUGGESTED_ACTIONS_BY_SIGNAL: dict[str, str] = {
     "order_mismatch": "Revisar inconsistencia en la orden.",
     "order_missing_in_documents": "Solicitar documentación faltante.",
     "duplicate_order": "Verificar posible duplicado de orden.",
+    "replacement_lag": "Actualizar precio de venta para proteger margen.",
+    "zombie_capital": "Reducir stock inmovil y acelerar rotación comercial.",
 }
 
 
@@ -100,7 +102,7 @@ def _render_result(request: Request, context: dict[str, Any]) -> HTMLResponse:
     templates = _get_templates()
     if templates is None:
         issues = "".join(
-            f"<div>{s['signal_code']} en {s['entity_ref']} (priority={s['priority']}, group={s['group']})</div>"
+            f"<div>{s['signal_code']} en {s['entity_ref']} (priority={s.get('priority', '')}, group={s.get('group', '')})</div>"
             for s in context["signals"]
         )
         actions = "".join(f"<div>{a}</div>" for a in context["suggested_actions"])
@@ -133,8 +135,11 @@ def _build_signals(ventas: list[dict[str, Any]], facturas: list[dict[str, str]])
     facturas_ids = {f["order_id"] for f in facturas}
 
     missing_signals = [
-        {"signal_code": "order_missing_in_documents", "entity_ref": f"order_{order_id}",
-         "human_message": HUMAN_SIGNALS.get("order_missing_in_documents", "Hay una inconsistencia en tus datos")}
+        {
+            "signal_code": "order_missing_in_documents",
+            "entity_ref": f"order_{order_id}",
+            "human_message": HUMAN_SIGNALS.get("order_missing_in_documents", "Hay una inconsistencia en tus datos"),
+        }
         for order_id in sorted(set(ventas_ids) - facturas_ids)
     ]
 
@@ -147,9 +152,12 @@ def _build_signals(ventas: list[dict[str, Any]], facturas: list[dict[str, str]])
             seen.add(order_id)
 
     duplicate_signals = [
-        {"signal_code": "duplicate_order", "entity_ref": f"order_{order_id}",
-         "human_message": HUMAN_SIGNALS.get("duplicate_order", "Hay una inconsistencia en tus datos")}
-         for order_id in sorted(dup)
+        {
+            "signal_code": "duplicate_order",
+            "entity_ref": f"order_{order_id}",
+            "human_message": HUMAN_SIGNALS.get("duplicate_order", "Hay una inconsistencia en tus datos"),
+        }
+        for order_id in sorted(dup)
     ]
 
     signals = missing_signals + duplicate_signals
@@ -169,16 +177,12 @@ async def saas_upload(
     ventas_file: UploadFile | None = File(None),
     facturas_file: UploadFile | None = File(None),
 ) -> Any:
-    print("🔥 ENTERED /saas/upload")
     debug_mode = is_debug_enabled(request)
     debug_trail: list[dict[str, Any]] | None = [] if debug_mode else None
 
     try:
         single_mode = file is not None and ventas_file is None and facturas_file is None
         legacy_mode = file is None and ventas_file is not None and facturas_file is not None
-
-        print("single_mode value:", single_mode)
-        print("legacy_mode value:", legacy_mode)
 
         if not single_mode and not legacy_mode:
             raise ValueError("Debés enviar un archivo (file) o el par legacy (ventas_file + facturas_file).")
@@ -187,7 +191,6 @@ async def saas_upload(
         _create_request_dir(ingestion_id)
 
         if single_mode:
-            print("📂 Processing single file upload")
             assert file is not None
             request_dir = _create_request_dir(ingestion_id)
             single_path = request_dir / (file.filename or "upload.csv")
@@ -199,6 +202,7 @@ async def saas_upload(
             valid_rows = ingestion_result["valid_rows"]
             total_raw_rows = ingestion_result["total_rows"]
             doc_type = "upload"
+
             single_meta = persist_ingestion(
                 ingestion_id,
                 single_path,
@@ -209,6 +213,7 @@ async def saas_upload(
             v_meta: dict[str, Any] = single_meta
             f_meta: dict[str, Any] = single_meta
             generated_signals = _build_signals(ventas, facturas)
+            hermes_findings = build_findings(ventas + facturas)
 
         else:
             assert ventas_file is not None and facturas_file is not None
@@ -232,8 +237,8 @@ async def saas_upload(
             v_meta = persist_ingestion(ingestion_id, ventas_path, ventas, {}, "ventas") or {}
             f_meta = persist_ingestion(ingestion_id, facturas_path, facturas, {}, "facturas") or {}
             generated_signals = _build_signals(ventas, facturas)
+            hermes_findings = build_findings(ventas + facturas)
 
-        # Bloqueo temprano si no hay datos válidos
         if valid_rows == 0:
             return _render_result(
                 request=request,
@@ -242,6 +247,7 @@ async def saas_upload(
                     "document_type": doc_type,
                     "total_signals": 0,
                     "signals": [],
+                    "hermes_findings": [],
                     "suggested_actions": [],
                     "total_raw_rows": total_raw_rows,
                     "valid_rows": 0,
@@ -266,6 +272,12 @@ async def saas_upload(
         )
 
         signals = orchestration_result["signals"]
+        hermes_visible_findings = [
+            finding
+            for finding in hermes_findings
+            if str(finding.get("type", "")) in {"replacement_lag", "zombie_capital"}
+        ]
+
         suggested_actions: list[str] = [
             HUMAN_SIGNALS.get(
                 str(signal.get("signal_code", "")),
@@ -303,6 +315,7 @@ async def saas_upload(
                     "ingestion_id": ingestion_id,
                     "debug": debug_trail,
                     "signals": generated_signals,
+                    "hermes_findings": hermes_visible_findings,
                     "orchestration": orchestration_result,
                 }
             )
@@ -323,6 +336,7 @@ async def saas_upload(
                 "document_type": doc_type,
                 "total_signals": len(signals),
                 "signals": signals,
+                "hermes_findings": hermes_visible_findings,
                 "suggested_actions": suggested_actions,
                 "total_raw_rows": total_raw_rows,
                 "valid_rows": valid_rows,
@@ -334,6 +348,7 @@ async def saas_upload(
         )
     except Exception as exc:
         import logging
+
         logging.getLogger("smartbridge").error("saas_upload error: %s", exc, exc_info=True)
 
         human_error = "No pudimos procesar el archivo. Revisá que el formato sea correcto (CSV o Excel con columnas de pedidos)."
@@ -357,6 +372,7 @@ def list_ingestions() -> JSONResponse:
     try:
         from app.services.ingestion_persistence import _INGESTIONS_ROOT
         import json
+
         index_file = _INGESTIONS_ROOT / "index.json"
         if not index_file.exists():
             return JSONResponse({"ingestions": []})
@@ -375,6 +391,7 @@ def get_ingestion(ingestion_id: str) -> JSONResponse:
     try:
         from app.services.ingestion_persistence import _INGESTIONS_ROOT
         import json
+
         target_dir = _INGESTIONS_ROOT / ingestion_id
         if not target_dir.exists():
             return JSONResponse({"error": "Ingestion not found"}, status_code=404)
@@ -395,10 +412,9 @@ def read_modules_registry() -> JSONResponse:
     try:
         registry_path = "docs/product/modules/modules_registry_v1.json"
         result = load_modules_registry(registry_path)
-        
+
         status_code = 500 if result.get("validation_errors") else 200
         return JSONResponse(result, status_code=status_code)
-        
+
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
-
