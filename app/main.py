@@ -1,6 +1,9 @@
 import sqlite3
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from typing import Any
+
+load_dotenv()
 
 from app.run_pipeline import run_pipeline
 from app.api.routes.telegram import router as telegram_router

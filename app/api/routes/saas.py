@@ -15,6 +15,7 @@ from app.modules.registry_loader import load_modules_registry
 from app.services.findings_engine import build_findings
 from app.services.ingestion_loader import run_ingestion_pipeline
 from app.services.ingestion_persistence import persist_ingestion, update_global_index
+from app.services.leads_service import create_lead
 from app.services.orchestrator.run_pipeline import run_pipeline as run_orchestrator_pipeline
 from app.services.scoring import compute_priority
 
@@ -168,6 +169,40 @@ def _build_signals(ventas: list[dict[str, Any]], facturas: list[dict[str, str]])
 @router.get("", response_class=HTMLResponse)
 def saas_home(request: Request) -> HTMLResponse:
     return _render_saas_form(request=request, error=None)
+
+
+@router.post("/lead")
+async def create_web_lead(request: Request) -> JSONResponse:
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        body = await request.json()
+    else:
+        body = dict(await request.form())
+
+    payload: dict[str, Any] = {}
+    for field in ("name", "business_name", "vertical", "phone", "email", "data_source_type"):
+        value = body.get(field)
+        if value is not None and str(value).strip():
+            payload[field] = value
+
+    lead = create_lead(payload)
+    lead_id = lead.get("lead_id")
+    telegram_link_token = lead.get("telegram_link_token")
+    bot_username = os.getenv("TELEGRAM_BOT_USERNAME", "").strip().lstrip("@")
+    if not bot_username:
+        return JSONResponse(
+            {"error": "TELEGRAM_BOT_USERNAME is not configured"},
+            status_code=500,
+        )
+    telegram_link = f"https://t.me/{bot_username}?start={telegram_link_token}"
+
+    return JSONResponse(
+        {
+            "lead_id": lead_id,
+            "telegram_link_token": telegram_link_token,
+            "telegram_link": telegram_link,
+        }
+    )
 
 
 @router.post("/upload")
